@@ -1,2 +1,4 @@
 D:\UPC University\4th year\Networks & Online Games\Multi Threading\x64\Debug\MultiThreading.exe
 D:\UPC University\4th year\Networks & Online Games\Multi Threading\x64\Debug\MultiThreading.pdb
+C:\Users\didac\OneDrive\Documentos\GitHub\Networks-Online-Games-HW\Multi Threading\x64\Debug\MultiThreading.exe
+C:\Users\didac\OneDrive\Documentos\GitHub\Networks-Online-Games-HW\Multi Threading\x64\Debug\MultiThreading.pdb
