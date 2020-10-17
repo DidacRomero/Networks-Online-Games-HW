@@ -4,6 +4,21 @@
 #include <Windows.h>
 
 
+
+void sendTo()
+{
+
+}
+
+void recvFrom()
+{
+
+}
+
+void closeSocket()
+{
+
+}
 //UDP CLIENT Entry Point
 int main(int argc, char **argv)
 {
@@ -11,8 +26,8 @@ int main(int argc, char **argv)
 
 	for (int i = 0; i < 5; ++i)
 	{
-		std::cout << "Cycle:" <<  i << " \n";
-		Sleep(500);
+		std::cout << "Cycle:" <<  i + 1 << " \n";
+		Sleep(500);	//Wait 500 ms
 	}
 
 	system("pause");
