@@ -43,6 +43,24 @@ bool initializeSocketsLib()
 	return true;
 }
 
+bool cleanUpSocketsLib()
+{
+	int iResult = WSACleanup();
+
+	if (iResult == NO_ERROR)
+	{
+		//SUCCESS!
+		std::cout << "----------\n";
+		std::cout << "Sockets CleanUp: SUCCESS \n";
+		return true;
+	}
+
+	//FAILURE!
+	std::cout << "----------\n";
+	std::cout << "Sockets CleanUp: FAILURE \n";
+	return false;
+}
+
 //UDP CLIENT Entry Point
 int main(int argc, char **argv)
 {
@@ -55,6 +73,9 @@ int main(int argc, char **argv)
 		std::cout << "Cycle:" <<  i + 1 << " \n";
 		Sleep(500);	//Wait 500 ms
 	}
+
+	//CleanUP Sockets
+	cleanUpSocketsLib();
 
 	system("pause");
 	return 1;
