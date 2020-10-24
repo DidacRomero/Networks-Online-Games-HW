@@ -7,9 +7,26 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 
 	// TODO(jesus): TCP connection stuff
 	// - Create the socket
+	this->socket = ::socket(AF_INET, SOCK_STREAM, 0);		//Since socket() doesn't belong to a namespace we use the global namespace ( :: )
+
 	// - Create the remote address object
+	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(serverPort);
+	inet_pton(AF_INET, serverAddressStr, &serverAddress.sin_addr);
+	
 	// - Connect to the remote address
+	if (connect(socket, (const struct sockaddr*)&serverAddress, sizeof(serverAddress)) == NO_ERROR)
+		DLOG("Connected to server SUCCESSFULLY!");
+	else
+	{
+		DLOG("Error %d connecting to server", WSAGetLastError());
+		closesocket(socket);
+		return false;
+	}
+
+
 	// - Add the created socket to the managed list of sockets using addSocket()
+	addSocket(socket);
 
 	// If everything was ok... change the state
 	state = ClientState::Start;

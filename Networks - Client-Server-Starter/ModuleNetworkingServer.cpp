@@ -11,27 +11,27 @@ bool ModuleNetworkingServer::start(int port)
 {
 	// TODO(jesus): TCP listen socket stuff
 	// - Create the listenSocket
-	SOCKET server_socket = socket(AF_INET, SOCK_STREAM,0);
+	listenSocket = socket(AF_INET, SOCK_STREAM,0);
 	// - Set address reuse
 	struct sockaddr_in bindAddr;
 	bindAddr.sin_family = AF_INET;
 	bindAddr.sin_port = htons(port);
 	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY;
 	// - Bind the socket to a local interface
-	if (bind(server_socket, (const struct sockaddr*)&bindAddr, sizeof(bindAddr)) == NO_ERROR)
+	if (bind(listenSocket, (const struct sockaddr*)&bindAddr, sizeof(bindAddr)) == NO_ERROR)
 		LOG("SUCCESSFULLY binded Server Socket");
 	else
 		LOG("Error &d creating Server Socket", WSAGetLastError());
 
 	// - Enter in listen mode
-	if (listen(server_socket, 24) == NO_ERROR)
+	if (listen(listenSocket, 24) == NO_ERROR)
 		LOG("SUCCESSFULLY set up listen Server Socket");
 	else
 		LOG("Error: &d setting up listen Server Socket", WSAGetLastError());
 
 	//Set socket to listen with a max of 24 foreign connections
 	// - Add the listenSocket to the managed list of sockets using addSocket()
-	addSocket(server_socket);
+	addSocket(listenSocket);
 
 
 	state = ServerState::Listening;
