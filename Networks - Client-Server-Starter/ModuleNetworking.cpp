@@ -1,5 +1,6 @@
 #include "Networks.h"
 #include "ModuleNetworking.h"
+#include <list>
 
 
 static uint8 NumModulesUsingWinsock = 0;
@@ -62,14 +63,67 @@ bool ModuleNetworking::preUpdate()
 	byte incomingDataBuffer[incomingDataBufferSize];
 
 	// TODO(jesus): select those sockets that have a read operation available
+	//This code is extracted from Jesus's pdf
+	fd_set readfds;
+	FD_ZERO(&readfds);
+
+	//Fill the set
+	for (auto s : sockets)
+		FD_SET(s, &readfds);
+
+	//Timeout (0 to return immediately)
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+
+	//Select (Check for Readibility)
+	int res = select(0, &readfds, nullptr, nullptr, &timeout);
+	if (res == SOCKET_ERROR)
+	{
+		LOG("Error %s", WSAGetLastError());
+		return true;
+	}
 
 	// TODO(jesus): for those sockets selected, check wheter or not they are
 	// a listen socket or a standard socket and perform the corresponding
 	// operation (accept() an incoming connection or recv() incoming data,
 	// respectively).
-	// On accept() success, communicate the new connected socket to the
-	// subclass (use the callback onSocketConnected()), and add the new
-	// connected socket to the managed list of sockets.
+
+	//------------------------Checking selected sockets ----------------------------------//
+	std::list<SOCKET> disconnectedSockets;
+	sockaddr_in received_addr;
+	int addr_size = sizeof(received_addr);
+	//Read selscted sockets
+	for (auto s : sockets)
+	{
+		if (FD_ISSET(s, &readfds))
+		{
+			if (this->isListenSocket(s))		//If we are the server socket
+			{	//ACCEPT stuff
+				// On accept() success, communicate the new connected socket to the
+				// subclass (use the callback onSocketConnected()), and add the new
+				// connected socket to the managed list of sockets.
+				SOCKET remote_s = accept(s, (struct sockaddr*)&received_addr, &addr_size);
+				if (remote_s != -1) //Success
+				{
+					DLOG("Accepted a  remote socket");
+				}
+				else
+				{
+					DLOG("Error trying to accept a remote socket");
+				}
+			}
+			else //It's a CLIENT, so we recv stuff
+			{
+
+
+			}
+
+		}
+	}
+
+
+	
 	// On recv() success, communicate the incoming data received to the
 	// subclass (use the callback onSocketReceivedData()).
 
