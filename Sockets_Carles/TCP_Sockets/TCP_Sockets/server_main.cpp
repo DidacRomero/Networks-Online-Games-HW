@@ -68,7 +68,6 @@ int main(int argc, char* argv[])
 					const unsigned int bufferSize = 256;
 					char* msg = new char[bufferSize];
 					const char* response = "Pong!";
-					bool shutdownServer = false;
 
 					if (listen(s, SOMAXCONN) == SOCKET_ERROR) {
 						iResult = WSAGetLastError();
@@ -89,19 +88,19 @@ int main(int argc, char* argv[])
 							int cycle = 0;
 
 							//Sleep(1000);
-							while (!shutdownServer) {
+							while (true) {
 
 								printf("SERVER ITERATION: %i\n", ++cycle);
 								printf("Server Awaiting Message...\n");
-								if (recv(remoteSocket, msg, bufferSize, NULL) != SOCKET_ERROR) {
 
-									printf("Server Receives: %s\n", msg);
-									Sleep(500);
+								int clientConnection = recv(remoteSocket, msg, bufferSize, NULL);
+								if (clientConnection != SOCKET_ERROR) {
 
-									if (strcmp(msg, "TERMINATE\n") == 0) {
-										shutdownServer = true;
-									}
-									else {
+									if (clientConnection != 0 && strcmp(msg, "TERMINATE\n") != 0) {	// Ensure that the socket hasn't disconnected nor is instructing us to shutdown
+
+										printf("Server Receives: %s\n", msg);
+										Sleep(500);
+
 										if (send(remoteSocket, response, bufferSize, NULL) != SOCKET_ERROR) {
 											printf("Server Sends: %s\n", response);
 										}
@@ -110,6 +109,10 @@ int main(int argc, char* argv[])
 											printf("Message Sending Error! Error code: %i\n", iResult);
 											break;
 										}
+									}
+									else {
+										printf("Client Socket was Closed! Shutting Down Server...\n");
+										break;
 									}
 								}
 								else {
@@ -147,6 +150,7 @@ int main(int argc, char* argv[])
 		printf("WSAStartup Error! Error code: %i\n", iResult);
 	}
 
+	printf("\n");
 	system("pause");
 	return 0;
 }

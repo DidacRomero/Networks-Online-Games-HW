@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 
 				delete[] response;
 
+				// In UDP we will make the client send a termination message to the server, as the server is not supervising if this client socket has closed
 				printf("CLIENT TERMINATION\n");
 				if (sendto(s, "TERMINATE\n", sizeof("TERMINATE\n"), 0, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr)) == SOCKET_ERROR) {
 					iResult = WSAGetLastError();
@@ -111,6 +112,7 @@ int main(int argc, char* argv[])
 		printf("WSAStartup Error! Error code: %i\n", iResult);
 	}
 
+	printf("Closing Client...\n\n");
 	system("pause");
 	return 0;
 }

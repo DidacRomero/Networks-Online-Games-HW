@@ -94,11 +94,12 @@ int main(int argc, char* argv[])
 
 					delete[] response;
 
-					printf("CLIENT TERMINATION\n");
+					// UNEEDED Client Termination Message, as server will detect that the client socket was closed
+					/*printf("CLIENT TERMINATION\n");
 					if (send(s, "TERMINATE\n", sizeof("TERMINATE\n"), NULL) == SOCKET_ERROR) {
 						iResult = WSAGetLastError();
 						printf("Terminate Sending Error! Error code: %i\n", iResult);
-					}
+					}*/
 				}
 			}
 			else {
@@ -119,6 +120,7 @@ int main(int argc, char* argv[])
 		printf("WSAStartup Error! Error code: %i\n", iResult);
 	}
 
+	printf("Closing Client...\n\n");
 	system("pause");
 	return 0;
 }

@@ -64,26 +64,24 @@ int main(int argc, char* argv[])
 				const unsigned int bufferSize = 256;
 				char* msg = new char[bufferSize];
 				const char* response = "Pong!";
-				bool shutdownServer = false;
 
 				int cycle = 0;
 
 				//Sleep(1000);
-				while (!shutdownServer) {
-					
+				while (true) {
+
 					sockaddr_in remoteAddr;
 
 					printf("SERVER ITERATION: %i\n", ++cycle);
 					printf("Server Awaiting Message...\n");
-					if (recvfrom(s, msg, bufferSize, 0, (struct sockaddr*)&remoteAddr, &adressSize) != SOCKET_ERROR) {
 
-						printf("Server Receives: %s\n", msg);
-						Sleep(500);
+					if (recvfrom(s, msg, bufferSize, 0, (struct sockaddr*)&remoteAddr, &adressSize)) {
 
-						if (strcmp(msg, "TERMINATE\n") == 0) {
-							shutdownServer = true;
-						}
-						else {
+						if (strcmp(msg, "TERMINATE\n") != 0) {
+
+							printf("Server Receives: %s\n", msg);
+							Sleep(500);
+
 							if (sendto(s, response, bufferSize, 0, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr)) != SOCKET_ERROR) {
 								printf("Server Sends: %s\n", response);
 							}
@@ -92,6 +90,10 @@ int main(int argc, char* argv[])
 								printf("Message Sending Error! Error code: %i\n", iResult);
 								break;
 							}
+						}
+						else {
+							printf("Client Requests Server Termination! Shutting Down Server...\n");
+							break;
 						}
 					}
 					else {
@@ -124,6 +126,7 @@ int main(int argc, char* argv[])
 		printf("WSAStartup Error! Error code: %i\n", iResult);
 	}
 
+	printf("\n");
 	system("pause");
 	return 0;
 }
