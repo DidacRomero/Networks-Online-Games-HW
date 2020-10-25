@@ -5,6 +5,8 @@
 #include <WS2tcpip.h>
 #include <iostream>
 
+// By Carles Homs & Dídac Romero
+
 /* ----------------------------------------
 
 SOCKET socket(int af, int type, int protocol) // Create socket
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
 						printf("Listen Command Error! Error code: %i\n", iResult);
 					}
 					else {
-						printf("Server Listening! Awaiting Connection...\n");
+						printf("Server Listening!\nAwaiting Connection...\n");
 
 						sockaddr_in remoteAddr;
 						remoteSocket = accept(s, (struct sockaddr*)&remoteAddr, &adressSize);
@@ -83,16 +85,18 @@ int main(int argc, char* argv[])
 							printf("Accept Command Error! Error code: %i\n", iResult);
 						}
 						else {
-							printf("Server Accepted Connection!\n");
+							printf("Server Accepted Connection!\n\n");
 							int cycle = 0;
 
 							//Sleep(1000);
 							while (!shutdownServer) {
 
 								printf("SERVER ITERATION: %i\n", ++cycle);
+								printf("Server Awaiting Message...\n");
 								if (recv(remoteSocket, msg, bufferSize, NULL) != SOCKET_ERROR) {
 
 									printf("Server Receives: %s\n", msg);
+									Sleep(500);
 
 									if (strcmp(msg, "TERMINATE\n") == 0) {
 										shutdownServer = true;

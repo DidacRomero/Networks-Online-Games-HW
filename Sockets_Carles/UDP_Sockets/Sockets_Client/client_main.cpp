@@ -5,6 +5,8 @@
 #include <WS2tcpip.h>
 #include <iostream>
 
+// By Carles Homs & Dídac Romero
+
 /* ----------------------------------------
 
 SOCKET socket(int af, int type, int protocol) // Create socket
@@ -54,15 +56,16 @@ int main(int argc, char* argv[])
 				const unsigned int bufferSize = 256;
 				char* response = new char[bufferSize];
 
-				Sleep(100);
 				for (int i = 1; i <= 5; ++i) {
 
+					Sleep(500);
 					printf("CLIENT ITERATION N: %i\n", i);
 					if (sendto(s, msg, bufferSize, 0, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr)) != SOCKET_ERROR) {
 
 						printf("Client Sends: %s\n", msg);
 						//struct sockaddr_in bindAddr;
 
+						printf("Client Awaiting Response...\n");
 						if (recvfrom(s, response, bufferSize, 0, nullptr, nullptr) != SOCKET_ERROR) {
 							printf("Client Receives: %s\n", response);
 						}

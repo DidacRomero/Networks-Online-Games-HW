@@ -5,6 +5,8 @@
 #include <WS2tcpip.h>
 #include <iostream>
 
+// By Carles Homs & Dídac Romero
+
 /* ----------------------------------------
 
 SOCKET socket(int af, int type, int protocol) // Create socket
@@ -72,9 +74,11 @@ int main(int argc, char* argv[])
 					sockaddr_in remoteAddr;
 
 					printf("SERVER ITERATION: %i\n", ++cycle);
+					printf("Server Awaiting Message...\n");
 					if (recvfrom(s, msg, bufferSize, 0, (struct sockaddr*)&remoteAddr, &adressSize) != SOCKET_ERROR) {
 
 						printf("Server Receives: %s\n", msg);
+						Sleep(500);
 
 						if (strcmp(msg, "TERMINATE\n") == 0) {
 							shutdownServer = true;
