@@ -122,6 +122,8 @@ int main(int argc, char* argv[])
 								printf("\n");
 							}
 						}
+
+						closesocket(remoteSocket);
 					}
 
 					delete[] msg;
@@ -137,7 +139,6 @@ int main(int argc, char* argv[])
 			printf("Socket Creation Error! Error code: %i\n", iResult);
 		}
 
-		closesocket(remoteSocket);
 		closesocket(s);	// Destroy socket
 		iResult = WSACleanup();
 	}
