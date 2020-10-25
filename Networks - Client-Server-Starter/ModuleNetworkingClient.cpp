@@ -44,6 +44,12 @@ bool ModuleNetworkingClient::update()
 	if (state == ClientState::Start)
 	{
 		// TODO(jesus): Send the player name to the server
+		if (send(socket, (const char*)&playerName, sizeof(std::string), 0) != SOCKET_ERROR)
+			DLOG("Sent playerName: %s correctly to server!", playerName.c_str());
+		else
+			DLOG("Failed to send playerName: %s correctly to server! Error: ", playerName.c_str(), WSAGetLastError());
+
+		state = ClientState::Logging;
 	}
 
 	return true;
