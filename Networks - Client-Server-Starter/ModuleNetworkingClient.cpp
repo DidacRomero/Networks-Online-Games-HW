@@ -5,6 +5,7 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 {
 	playerName = pplayerName;
 
+	bool ret = false;
 	// TODO(jesus): TCP connection stuff
 	// - Create the socket
 	this->socket = ::socket(AF_INET, SOCK_STREAM, 0);		//Since socket() doesn't belong to a namespace we use the global namespace ( :: )
@@ -16,7 +17,10 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 	
 	// - Connect to the remote address
 	if (connect(socket, (const struct sockaddr*)&serverAddress, sizeof(serverAddress)) == NO_ERROR)
+	{
 		DLOG("Connected to server SUCCESSFULLY!");
+		ret = true;
+	}
 	else
 	{
 		DLOG("Error %d connecting to server", WSAGetLastError());
@@ -30,6 +34,14 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 
 	// If everything was ok... change the state
 	state = ClientState::Start;
+	//if (ret = true)
+	//{
+	//	state = ClientState::Logging;
+	//}
+	//else
+	//{
+	//	state = ClientState::Start;
+	//}
 
 	return true;
 }
@@ -44,7 +56,7 @@ bool ModuleNetworkingClient::update()
 	if (state == ClientState::Start)
 	{
 		// TODO(jesus): Send the player name to the server
-		if (send(socket, (const char*)&playerName, sizeof(std::string), 0) != SOCKET_ERROR)
+		if (send(socket, playerName.c_str(), sizeof(playerName), 0) != SOCKET_ERROR)
 			DLOG("Sent playerName: %s correctly to server!", playerName.c_str());
 		else
 			DLOG("Failed to send playerName: %s correctly to server! Error: ", playerName.c_str(), WSAGetLastError());
