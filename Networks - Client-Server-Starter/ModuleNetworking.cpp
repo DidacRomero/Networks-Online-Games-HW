@@ -132,6 +132,7 @@ bool ModuleNetworking::preUpdate()
 					// or when it generated some errors such as ECONNRESET.
 					// Communicate detected disconnections to the subclass using the callback
 					// onSocketDisconnected().
+					LOG("Socket %d disconnected! Connection Terminated", s);
 					onSocketDisconnected(s);
 
 					disconnectedSockets.push_back(s);
@@ -141,15 +142,27 @@ bool ModuleNetworking::preUpdate()
 					DLOG("Received: &s", incomingDataBuffer);
 				}
 			}
+
+			
 		}
 	}
 
 	// TODO(jesus): Finally, remove all disconnected sockets from the list
 	// of managed sockets.
-
-	for (std::list<SOCKET>::iterator it = disconnectedSockets.begin(); it != disconnectedSockets.end(); it++)
+	if (disconnectedSockets.size() > 0)
 	{
-		//if()
+		//Double for to iterate disconnected sockets
+		for (std::list<SOCKET>::iterator disc_it = disconnectedSockets.begin(); disc_it != disconnectedSockets.end(); ++disc_it)
+		{
+			for (std::vector<SOCKET>::iterator it = sockets.begin(); it != sockets.end(); it++)
+			{
+				if ((*disc_it) == (*it))
+				{
+					sockets.erase(it);
+					break;
+				}
+			}
+		}
 	}
 
 	return true;
