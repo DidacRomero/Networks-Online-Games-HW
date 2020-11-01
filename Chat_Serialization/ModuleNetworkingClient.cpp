@@ -107,6 +107,11 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		LOG("%s", welcome_message.c_str());
 	}
+	else if (message_received == ServerMessage::NonWelcome)
+	{
+		LOG("The username %s is already taken, please change your name and try again", playerName.c_str());
+		state = ClientState::Stopped;
+	}
 
 	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
 	//state = ClientState::Stopped;

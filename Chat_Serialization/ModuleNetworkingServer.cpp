@@ -121,6 +121,11 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		for (auto& connectedSocket : connectedSockets)
 		{
+			//If the username is already taken   _____________  We assume that since it's a 1st connection the connected socket is the last, so we don't reiterate the whole vector
+			if (connectedSocket.playerName == playerName )
+			{
+				onUsernameTaken(connectedSocket.socket, playerName);
+			}
 			if (connectedSocket.socket == socket)
 			{
 				connectedSocket.playerName = playerName;
@@ -132,6 +137,9 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 				welcome_packet << message;
 
 				sendPacket(welcome_packet, socket);
+
+				//Assuming we are done 
+				break;
 			}
 		}
 	}
@@ -149,5 +157,19 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 			break;
 		}
 	}
+}
+
+void ModuleNetworkingServer::onUsernameTaken(SOCKET socket, const std::string &username)
+{
+	std::string message = "Your username is already taken, please change it and retry connection to the server to access the chat.";
+	OutputMemoryStream packet;
+	ServerMessage msg_type = ServerMessage::NonWelcome;
+
+	packet << msg_type;
+	packet << message;
+
+	sendPacket(packet, socket);
+
+	LOG("Socket %d  with username %s disconnected! Forced disconnection due to duplicity of usernames.", socket, username.c_str());
 }
 
