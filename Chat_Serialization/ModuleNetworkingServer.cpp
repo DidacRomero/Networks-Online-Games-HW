@@ -124,16 +124,15 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			if (connectedSocket.socket == socket)
 			{
 				connectedSocket.playerName = playerName;
-			}
-		}
-	}
 
-	// Set the player name of the corresponding connected socket proxy
-	for (auto &connectedSocket : connectedSockets)
-	{
-		if (connectedSocket.socket == socket)
-		{
-			//connectedSocket.playerName = (const char *)data;
+				// (TODO 1 DC )Send Welcome Packet
+				std::string message = "Welcome to Chad's Cool Chat! You have entered a chat room.";
+				OutputMemoryStream welcome_packet;
+				welcome_packet << ServerMessage::Welcome;
+				welcome_packet << message;
+
+				sendPacket(welcome_packet, socket);
+			}
 		}
 	}
 }

@@ -68,9 +68,8 @@ bool ModuleNetworkingClient::update()
 		{
 			disconnect();
 			state = ClientState::Stopped;
+			return true;
 		}
-
-		state = ClientState::Logging;
 	}
 
 	return true;
@@ -97,7 +96,20 @@ bool ModuleNetworkingClient::gui()
 
 void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemoryStream& packet)
 {
-	state = ClientState::Stopped;
+	//We will do different actions depensing on the type of message
+	ServerMessage message_received;
+	packet >> message_received;
+
+	if (message_received == ServerMessage::Welcome)	//In case we are welcomed by the server (just connected)
+	{
+		std::string welcome_message;
+		packet >> welcome_message;
+
+		LOG("%s", welcome_message.c_str());
+	}
+
+	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
+	//state = ClientState::Stopped;
 }
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
