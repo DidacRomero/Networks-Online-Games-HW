@@ -137,7 +137,7 @@ bool ModuleNetworking::preUpdate()
 					packet.SetSize((uint32)bytesRead);
 					onSocketReceivedData(s, packet);
 				}
-				else if (bytesRead == 0 || bytesRead == ECONNRESET)	//Connection Terminated 
+				else if (bytesRead == SOCKET_ERROR || bytesRead == 0 || bytesRead == ECONNRESET)	//Connection Terminated 
 				{
 					// TODO(jesus): handle disconnections. Remember that a socket has been
 					// disconnected from its remote end either when recv() returned 0,

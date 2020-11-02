@@ -171,5 +171,18 @@ void ModuleNetworkingServer::onUsernameTaken(SOCKET socket, const std::string &u
 	sendPacket(packet, socket);
 
 	LOG("Socket %d  with username %s disconnected! Forced disconnection due to duplicity of usernames.", socket, username.c_str());
+	
+
+	//Disconnect the socket
+	onSocketDisconnected(socket);
+
+	for (std::vector<SOCKET>::iterator it = sockets.begin(); it != sockets.end(); it++)
+	{
+		if ((*it) == socket)
+		{
+			sockets.erase(it);
+			break;
+		}
+	}
 }
 
