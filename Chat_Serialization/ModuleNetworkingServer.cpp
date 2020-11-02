@@ -119,15 +119,21 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string playerName;
 		packet >> playerName;
 
+		bool is_name_duplicate = false;
+		for (auto& connectedSocket : connectedSockets)
+			if (connectedSocket.playerName == playerName)
+				is_name_duplicate = true;
+
 		for (auto& connectedSocket : connectedSockets)
 		{
-			//If the username is already taken   _____________  We assume that since it's a 1st connection the connected socket is the last, so we don't reiterate the whole vector
-			if (connectedSocket.playerName == playerName )
-			{
-				onUsernameTaken(connectedSocket.socket, playerName);
-			}
 			if (connectedSocket.socket == socket)
 			{
+				//If the name is duplicate, disconnect socket and send non welcome packet, then break
+				if (is_name_duplicate == true)
+				{
+					onUsernameTaken(connectedSocket.socket, playerName);
+					break;
+				}
 				connectedSocket.playerName = playerName;
 
 				// (TODO 1 DC )Send Welcome Packet
