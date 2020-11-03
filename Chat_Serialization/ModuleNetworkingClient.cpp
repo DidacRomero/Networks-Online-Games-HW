@@ -86,6 +86,26 @@ bool ModuleNetworkingClient::gui()
 		ImVec2 texSize(400.0f, 400.0f * tex->height / tex->width);
 		ImGui::Image(tex->shaderResource, texSize);
 
+		ImGui::Text("Hello %s, welcome to the Chat!", playerName.c_str());
+
+		ImGui::Spacing();
+
+		ImGui::TextColored(ImVec4(255, 255, 0, 255), "      ****************************************\n               WELCOME TO THE CHAT\n            ****************************************");
+		ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImVec2(ImGui::GetWindowWidth() - 20, ImGui::GetWindowHeight() - 50), IM_COL32(64, 64, 64, 255));
+		ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
+		ImGui::Text("Message buffer should be displayed here...");
+		ImGui::PopTextWrapPos();
+
+		ImGui::Spacing();
+		ImGui::Dummy(ImVec2(0.0f, ImGui::GetWindowHeight() - 330.0f));
+
+		static char str1[128] = "";
+		if (ImGui::InputTextWithHint("", "Press Enter to send your message!", str1, IM_ARRAYSIZE(str1), ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			// Send the message here
+ 			int i = 0;
+		}
+
 		ImGui::Text("%s connected to the server...", playerName.c_str());
 
 		ImGui::End();
