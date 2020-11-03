@@ -112,7 +112,21 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		LOG("The username %s is already taken, please change your name and try again", playerName.c_str());
 		state = ClientState::Stopped;
 	}
+	else if (message_received == ServerMessage::ChatMessage)
+	{
+		ChatMessage chat_message;
+		packet >> chat_message.message;
+		packet >> chat_message.username;
 
+		//Add the public message to our messages list
+		messages.push_back(chat_message);
+
+		//LOG to test
+		DLOG("Test Log:   %s : %s", chat_message.username.c_str(),chat_message.message.c_str());
+	}
+	else if (message_received == ServerMessage::Whisper)
+	{
+	}
 	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
 	//state = ClientState::Stopped;
 }
@@ -120,5 +134,28 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
 	state = ClientState::Stopped;
+}
+
+
+// Send a message to other users
+void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhisper)
+{
+	OutputMemoryStream packet;
+	if (!isWhisper)
+		packet << ClientMessage::ChatMessage;
+	else
+		packet << ClientMessage::Whisper;
+
+	//Add infromation to the packet, WE ALWAYS WILL FOLLOW THIS FORMAT OF SERIALIZATION AND DE-SERIALIZATION
+	packet << message;	//Message
+	packet << playerName; //Username that sent the message
+	
+	if (isWhisper)
+	{
+		packet << isWhisper;	 // add the whisper bool
+		//add the destined username to receive the message
+	}
+
+	sendPacket(packet,socket);
 }
 

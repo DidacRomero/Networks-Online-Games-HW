@@ -2,6 +2,14 @@
 
 #include "ModuleNetworking.h"
 
+struct ChatMessage
+{
+	std::string username;	
+	std::string message;
+	bool is_whisper = false;
+	std::string whispered_user;		//On a real chat scenario we probably wouldn't use the username and use a faster & more complex system, but this is just an exercise
+};
+
 class ModuleNetworkingClient : public ModuleNetworking
 {
 public:
@@ -37,6 +45,12 @@ private:
 	void onSocketDisconnected(SOCKET socket) override;
 
 
+	///////////////////////////////////////////////////////////////////////
+	// Client Chat methods
+	//////////////////////////////////////////////////////////////////////
+
+	void sendChatMessage(std::string& message, bool isWhisper = false);
+
 
 	//////////////////////////////////////////////////////////////////////
 	// Client state
@@ -55,5 +69,7 @@ private:
 	SOCKET socket = INVALID_SOCKET;
 
 	std::string playerName;
+
+	std::vector<ChatMessage> messages;
 };
 

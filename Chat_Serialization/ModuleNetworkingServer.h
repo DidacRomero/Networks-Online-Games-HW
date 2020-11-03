@@ -41,7 +41,7 @@ private:
 	void onSocketDisconnected(SOCKET socket) override;
 
 
-	//FUnctions for each MESSAGE Case on RECEIVED DATA
+	//Functions for each MESSAGE Case on RECEIVED DATA
 
 	void onUsernameTaken(SOCKET socket, const std::string& username);
 

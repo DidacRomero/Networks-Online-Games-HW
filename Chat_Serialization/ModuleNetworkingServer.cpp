@@ -149,6 +149,31 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 	}
+	else if (clientMessage == ClientMessage::ChatMessage)
+	{
+		//We have a public message, send to all users
+		std::string message;
+		std::string username;
+		packet >> message;
+		packet >> username;
+
+		OutputMemoryStream chat_packet;
+		chat_packet << ServerMessage::ChatMessage;
+		chat_packet << message;
+		chat_packet << username;
+
+		for (auto& connectedSocket : connectedSockets)
+		{
+			//If the socket is not the listen socket, send them the public chat message
+			if (connectedSocket.socket != this->listenSocket)
+				sendPacket(chat_packet, connectedSocket.socket);
+		}
+		
+	}
+	else if (clientMessage == ClientMessage::Whisper)
+	{
+		//Same as message but we only send the message to the destined user
+	}
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
