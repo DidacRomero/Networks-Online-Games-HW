@@ -102,8 +102,9 @@ bool ModuleNetworkingClient::gui()
 		static char str1[128] = "";
 		if (ImGui::InputTextWithHint("", "Press Enter to send your message!", str1, IM_ARRAYSIZE(str1), ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			// Send the message here
- 			int i = 0;
+			// Send the PUBLIC message here
+			std::string str_message = str1;
+			sendChatMessage(str_message);
 		}
 
 		ImGui::Text("%s connected to the server...", playerName.c_str());
