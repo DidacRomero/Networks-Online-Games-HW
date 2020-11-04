@@ -148,6 +148,18 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	else if (message_received == ServerMessage::Whisper)
 	{
 	}
+	else if (message_received == ServerMessage::UserEvent)
+	{
+		UserConnection connection_state;
+		packet >> connection_state;
+		std::string username;
+		packet >> username;
+
+		if(connection_state == UserConnection::Joined)
+		DLOG("User %s joined the chat.", username.c_str());
+		else if (connection_state == UserConnection::Left)
+		DLOG("User %s left the chat.", username.c_str());
+	}
 	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
 	//state = ClientState::Stopped;
 }

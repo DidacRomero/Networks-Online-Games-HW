@@ -41,6 +41,11 @@ private:
 	void onSocketDisconnected(SOCKET socket) override;
 
 
+	//////////////////////////////////////////////////////////////////////
+
+	// User joined on true, user left on false
+	void userJoinedOrLeft(std::string &username, UserConnection connection_state);
+
 	//Functions for each MESSAGE Case on RECEIVED DATA
 
 	void onUsernameTaken(SOCKET socket, const std::string& username);

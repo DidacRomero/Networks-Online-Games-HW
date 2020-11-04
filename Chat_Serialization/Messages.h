@@ -15,6 +15,13 @@ enum class ServerMessage
 	Welcome,
 	NonWelcome,
 	ChatMessage,
-	Whisper
+	Whisper,
+	UserEvent
+};
+
+enum class UserConnection
+{
+	Left,
+	Joined
 };
 

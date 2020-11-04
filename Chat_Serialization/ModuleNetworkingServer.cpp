@@ -144,6 +144,9 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 				sendPacket(welcome_packet, socket);
 
+				//Now lets tell everyone a user joined the chat
+				userJoinedOrLeft(connectedSocket.playerName, UserConnection::Joined);
+
 				//Assuming we are done 
 				break;
 			}
@@ -184,9 +187,26 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 		auto &connectedSocket = *it;
 		if (connectedSocket.socket == socket)
 		{
+			//Now lets tell everyone a user left the chat
+			userJoinedOrLeft(connectedSocket.playerName, UserConnection::Left);
 			connectedSockets.erase(it);
 			break;
 		}
+	}
+}
+
+void ModuleNetworkingServer::userJoinedOrLeft(std::string& username, UserConnection connection_state)
+{
+	OutputMemoryStream packet;
+	packet << ServerMessage::UserEvent;
+	packet << connection_state;
+	packet << username;
+
+	for (auto& connectedSocket : connectedSockets)
+	{
+		//If the socket is not the listen socket, send them the public joined_left packet
+		if (connectedSocket.socket != this->listenSocket)
+			sendPacket(packet, connectedSocket.socket);
 	}
 }
 
