@@ -49,7 +49,8 @@ private:
 	// Client Chat methods
 	//////////////////////////////////////////////////////////////////////
 
-	void sendChatMessage(std::string& message, bool isWhisper = false);
+	void sendChatMessage(std::string& message, bool isWhisper = false, std::string dest_username = "");
+
 
 
 	//////////////////////////////////////////////////////////////////////

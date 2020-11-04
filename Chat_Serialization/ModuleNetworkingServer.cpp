@@ -176,6 +176,23 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 	else if (clientMessage == ClientMessage::Whisper)
 	{
 		//Same as message but we only send the message to the destined user
+		std::string message;
+		std::string username;
+		std::string dest_username;
+
+		OutputMemoryStream chat_packet;
+		chat_packet << ServerMessage::Whisper;
+		chat_packet << message;
+		chat_packet << username;
+		chat_packet << dest_username;
+
+		for (auto& connectedSocket : connectedSockets)
+		{
+			//If the socket is not the listen socket, send them the public chat message
+			if (connectedSocket.socket != this->listenSocket
+				&& connectedSocket.playerName == username || connectedSocket.playerName == dest_username)
+				sendPacket(chat_packet, connectedSocket.socket);
+		}
 	}
 }
 

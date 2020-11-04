@@ -104,6 +104,46 @@ bool ModuleNetworkingClient::gui()
 		{
 			// Send the PUBLIC message here
 			std::string str_message = str1;
+
+			// If a / is found, search for a command
+			if(str_message.find_first_of("/")  != std::string::npos)
+				if (str_message.find_first_of("/whisper") != std::string::npos)
+				{
+					std::string dest_username;
+					std::size_t first_; std::size_t second_;
+
+					//Find the first space " " and the second space " " to extract the username between them
+					first_ = str_message.find(" ");
+					second_ = str_message.find(" ", first_ + 1);
+
+					//Extract the username
+					if (second_ < 128) //Make sure we are really sending a whisper, so we don't crash the app
+					{
+						int username_len = second_ - first_;
+						char buffer[128];
+						std::size_t length = str_message.copy(buffer, first_ + 1, username_len - 1);
+						buffer[length] = '\0';
+
+						dest_username = buffer;
+					}
+					else
+						WLOG("You didn't send a message to a user, the whisper won't be sent");
+
+					int i = 0; //Dbug for breakpoints
+				}
+				else if (str_message.find_first_of("/kick") != std::string::npos)
+				{
+				}
+				else if (str_message.find_first_of("/help") != std::string::npos)
+				{
+				}
+				else if (str_message.find_first_of("/list") != std::string::npos)
+				{
+				}
+				else if (str_message.find_first_of("/change_name") != std::string::npos)
+				{
+				}
+			else
 			sendChatMessage(str_message);
 		}
 
@@ -171,7 +211,7 @@ void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 
 
 // Send a message to other users
-void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhisper)
+void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhisper, std::string dest_username)
 {
 	OutputMemoryStream packet;
 	if (!isWhisper)
@@ -184,10 +224,7 @@ void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhispe
 	packet << playerName; //Username that sent the message
 	
 	if (isWhisper)
-	{
-		packet << isWhisper;	 // add the whisper bool
-		//add the destined username to receive the message
-	}
+		packet << dest_username;
 
 	sendPacket(packet,socket);
 }
