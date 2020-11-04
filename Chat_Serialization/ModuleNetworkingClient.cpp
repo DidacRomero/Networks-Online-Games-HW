@@ -106,7 +106,8 @@ bool ModuleNetworkingClient::gui()
 			std::string str_message = str1;
 
 			// If a / is found, search for a command
-			if(str_message.find_first_of("/")  != std::string::npos)
+			if (str_message.find_first_of("/") != std::string::npos)
+			{
 				if (str_message.find_first_of("/whisper") != std::string::npos)
 				{
 					std::string dest_username;
@@ -114,22 +115,23 @@ bool ModuleNetworkingClient::gui()
 
 					//Find the first space " " and the second space " " to extract the username between them
 					first_ = str_message.find(" ");
-					second_ = str_message.find(" ", first_ + 1);
+					second_ = str_message.find(":");
 
 					//Extract the username
 					if (second_ < 128) //Make sure we are really sending a whisper, so we don't crash the app
 					{
 						int username_len = second_ - first_;
 						char buffer[128];
-						std::size_t length = str_message.copy(buffer, first_ + 1, username_len - 1);
-						buffer[length] = '\0';
 
-						dest_username = buffer;
+						dest_username = str_message.substr(first_ +1, username_len -1);
+						//std::size_t length = str_message.copy(buffer, first_ - 1, username_len);
+						//buffer[username_len] = '\0';
+
+						str_message.erase(0, second_ + 2);
+						sendChatMessage(str_message, true, dest_username);
 					}
 					else
 						WLOG("You didn't send a message to a user, the whisper won't be sent");
-
-					int i = 0; //Dbug for breakpoints
 				}
 				else if (str_message.find_first_of("/kick") != std::string::npos)
 				{
@@ -143,8 +145,11 @@ bool ModuleNetworkingClient::gui()
 				else if (str_message.find_first_of("/change_name") != std::string::npos)
 				{
 				}
+			}
 			else
-			sendChatMessage(str_message);
+			{
+				sendChatMessage(str_message);
+			}
 		}
 
 		ImGui::Text("%s connected to the server...", playerName.c_str());
@@ -187,6 +192,17 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::Whisper)
 	{
+		ChatMessage chat_message;
+		chat_message.is_whisper = true;
+		packet >> chat_message.message;
+		packet >> chat_message.username;
+		packet >> chat_message.whispered_user;
+
+		//Add the public message to our messages list
+		messages.push_back(chat_message);
+
+		//LOG to test
+		DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
 	}
 	else if (message_received == ServerMessage::UserEvent)
 	{

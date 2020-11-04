@@ -44,8 +44,6 @@ bool ModuleNetworkingServer::isRunning() const
 	return state != ServerState::Stopped;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////
 // Module virtual methods
 //////////////////////////////////////////////////////////////////////
@@ -180,18 +178,25 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string username;
 		std::string dest_username;
 
+		packet >> message;
+		packet >> username;
+		packet >> dest_username;
+
 		OutputMemoryStream chat_packet;
 		chat_packet << ServerMessage::Whisper;
 		chat_packet << message;
 		chat_packet << username;
 		chat_packet << dest_username;
 
-		for (auto& connectedSocket : connectedSockets)
+		if (userIsConnected(dest_username))
 		{
-			//If the socket is not the listen socket, send them the public chat message
-			if (connectedSocket.socket != this->listenSocket
-				&& connectedSocket.playerName == username || connectedSocket.playerName == dest_username)
-				sendPacket(chat_packet, connectedSocket.socket);
+			for (auto& connectedSocket : connectedSockets)
+			{
+				//If the socket is not the listen socket, send them the public chat message
+				if (connectedSocket.socket != this->listenSocket
+					&& connectedSocket.playerName == username || connectedSocket.playerName == dest_username)
+					sendPacket(chat_packet, connectedSocket.socket);
+			}
 		}
 	}
 }
@@ -252,5 +257,18 @@ void ModuleNetworkingServer::onUsernameTaken(SOCKET socket, const std::string &u
 			break;
 		}
 	}
+}
+
+bool ModuleNetworkingServer::userIsConnected(std::string &username)
+{
+	for (auto& connectedSocket : connectedSockets)
+	{
+		if (connectedSocket.playerName.compare(username) == 0) // If they compare equal (on success compare returns 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
