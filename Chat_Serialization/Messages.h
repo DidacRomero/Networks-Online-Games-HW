@@ -7,7 +7,8 @@ enum class ClientMessage
 {
 	Hello,
 	ChatMessage,
-	Whisper
+	Whisper,
+	Kick
 };
 
 enum class ServerMessage
@@ -16,7 +17,8 @@ enum class ServerMessage
 	NonWelcome,
 	ChatMessage,
 	Whisper,
-	UserEvent
+	UserEvent,
+	Kick
 };
 
 enum class UserConnection

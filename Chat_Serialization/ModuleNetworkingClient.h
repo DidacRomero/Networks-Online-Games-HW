@@ -51,6 +51,7 @@ private:
 
 	void sendChatMessage(std::string& message, bool isWhisper = false, std::string dest_username = "");
 
+	void sendKick(std::string &username);
 
 
 	//////////////////////////////////////////////////////////////////////

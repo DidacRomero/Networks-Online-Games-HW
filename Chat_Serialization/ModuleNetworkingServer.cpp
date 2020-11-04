@@ -199,6 +199,24 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 	}
+	else if (clientMessage == ClientMessage::Kick)
+	{
+		std::string kicked_username;
+		packet >> kicked_username;
+
+		OutputMemoryStream ban_packet;
+		ban_packet << ServerMessage::Kick;
+
+		for (auto& connectedSocket : connectedSockets)
+		{
+			//If the socket has the same username, send ban 
+			if (connectedSocket.playerName == kicked_username)
+			{
+				sendPacket(ban_packet, connectedSocket.socket);
+				onSocketDisconnected(connectedSocket.socket);
+			}
+		}
+	}
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)

@@ -141,7 +141,7 @@ bool ModuleNetworkingClient::gui()
 			// If a / is found, search for a command
 			if (str_message.find_first_of("/") != std::string::npos)
 			{
-				if (str_message.find_first_of("/whisper") != std::string::npos)
+				if (str_message.find("/whisper") != std::string::npos)
 				{
 					std::string dest_username;
 					std::size_t first_; std::size_t second_;
@@ -166,16 +166,32 @@ bool ModuleNetworkingClient::gui()
 					else
 						WLOG("You didn't send a message to a user, the whisper won't be sent");
 				}
-				else if (str_message.find_first_of("/kick") != std::string::npos)
+				else if (str_message.find("/kick") != std::string::npos)
+				{
+					std::string banned_user;
+					std::size_t first; std::size_t second;
+
+					//Find the first space "<" and the second space ">" to extract the username between them
+					first = str_message.find("<");
+					second = str_message.find(">");
+
+					int username_len = second - first;
+
+					banned_user = str_message.substr(first + 1, username_len - 1);
+
+					OutputMemoryStream packet;
+					packet << ClientMessage::Kick;
+					packet << banned_user;
+
+					sendPacket(packet, socket);
+				}
+				else if (str_message.find("/help") != std::string::npos)
 				{
 				}
-				else if (str_message.find_first_of("/help") != std::string::npos)
+				else if (str_message.find("/list") != std::string::npos)
 				{
 				}
-				else if (str_message.find_first_of("/list") != std::string::npos)
-				{
-				}
-				else if (str_message.find_first_of("/change_name") != std::string::npos)
+				else if (str_message.find("/change_name") != std::string::npos)
 				{
 				}
 			}
@@ -247,6 +263,10 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		else if (connection_state == UserConnection::Left)
 		DLOG("User %s left the chat.", username.c_str());
 	}
+	else if (message_received == ServerMessage::Kick)
+	{
+		state = ClientState::Stopped;
+	}
 	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
 	//state = ClientState::Stopped;
 }
@@ -274,5 +294,14 @@ void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhispe
 		packet << dest_username;
 
 	sendPacket(packet,socket);
+}
+
+void ModuleNetworkingClient::sendKick(std::string& username)
+{
+	OutputMemoryStream packet;
+	packet << ClientMessage::Kick;
+	packet << username,
+
+	sendPacket(packet, socket);
 }
 
