@@ -87,17 +87,50 @@ bool ModuleNetworkingClient::gui()
 		ImGui::Image(tex->shaderResource, texSize);
 
 		ImGui::Text("Hello %s, welcome to the Chat!", playerName.c_str());
-
 		ImGui::Spacing();
 
-		ImGui::TextColored(ImVec4(255, 255, 0, 255), "      ****************************************\n               WELCOME TO THE CHAT\n            ****************************************");
-		ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImVec2(ImGui::GetWindowWidth() - 20, ImGui::GetWindowHeight() - 50), IM_COL32(64, 64, 64, 255));
+		// ORIGINAL
+
+		ImGui::BeginChild("MessageRegion", ImVec2(0, -(ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing())), true);
+
+		//ImGui::Text("%s connected to the server...", playerName.c_str());
+
+		ImGui::TextColored(ImVec4(255, 255, 0, 255), "      ****************************************\n                WELCOME TO THE CHAT\n        Type /help for the list of commands!\n      ****************************************");
 		ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
-		ImGui::Text("Message buffer should be displayed here...");
+
+		if (messages.size() > 0) {
+			int a = 0;
+		}
+
+		for (auto msg : messages) {
+			if (msg.is_whisper) {
+				ImGui::TextColored(ImVec4(128, 128, 128, 255), "(Whisper) %s: %s", msg.username.c_str(), msg.message.c_str());
+			}
+			else {
+				ImGui::Text("%s: %s", msg.username.c_str(), msg.message.c_str());
+			}
+		}
 		ImGui::PopTextWrapPos();
 
-		ImGui::Spacing();
-		ImGui::Dummy(ImVec2(0.0f, ImGui::GetWindowHeight() - 330.0f));
+		ImGui::SetScrollHereY(1.0f);
+
+		ImGui::EndChild();
+
+		/*ImGui::Spacing();
+		ImGui::Dummy(ImVec2(0.0f, ImGui::GetWindowHeight() - 330.0f));*/
+
+		//static char str1[128] = "";
+		//if (ImGui::InputTextWithHint("", "Type a message...", str1, IM_ARRAYSIZE(str1), ImGuiInputTextFlags_EnterReturnsTrue))
+		//{
+		//	// Send the PUBLIC message here
+		//	std::string str_message = str1;
+		//	sendChatMessage(str_message);
+		//}
+
+		//// Auto-focus on window apparition
+		//ImGui::SetItemDefaultFocus();
+		//if (true)
+		//	ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 
 		static char str1[128] = "";
 		if (ImGui::InputTextWithHint("", "Press Enter to send your message!", str1, IM_ARRAYSIZE(str1), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -151,8 +184,6 @@ bool ModuleNetworkingClient::gui()
 				sendChatMessage(str_message);
 			}
 		}
-
-		ImGui::Text("%s connected to the server...", playerName.c_str());
 
 		ImGui::End();
 	}
