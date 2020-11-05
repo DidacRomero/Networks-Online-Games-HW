@@ -6,7 +6,9 @@ struct ChatMessage
 {
 	std::string username;	
 	std::string message;
+	bool is_system = false;		// Systemic messages that appear per user request only to himself
 	bool is_whisper = false;
+	bool is_anonymous = false;	// To mark anonymously sent messages
 	std::string whispered_user;		//On a real chat scenario we probably wouldn't use the username and use a faster & more complex system, but this is just an exercise
 };
 

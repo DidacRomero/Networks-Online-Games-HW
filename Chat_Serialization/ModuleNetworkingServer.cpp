@@ -150,7 +150,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 	}
-	else if (clientMessage == ClientMessage::ChatMessage)
+	else if (clientMessage == ClientMessage::ChatMessage || clientMessage == ClientMessage::AnonChatMessage)
 	{
 		//We have a public message, send to all users
 		std::string message;
@@ -159,7 +159,12 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> username;
 
 		OutputMemoryStream chat_packet;
-		chat_packet << ServerMessage::ChatMessage;
+
+		if (clientMessage == ClientMessage::AnonChatMessage)
+			chat_packet << ServerMessage::AnonChatMessage;
+		else
+			chat_packet << ServerMessage::ChatMessage;
+
 		chat_packet << message;
 		chat_packet << username;
 

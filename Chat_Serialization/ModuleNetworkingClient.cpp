@@ -106,8 +106,15 @@ bool ModuleNetworkingClient::gui()
 			if (msg.is_whisper) {
 				ImGui::TextColored(ImVec4(128, 128, 128, 255), "(Whisper) %s: %s", msg.username.c_str(), msg.message.c_str());
 			}
-			else if (msg.username.compare("") == 0) {	// IF it's a system message
+			else if (msg.is_system) {	// IF it's a system message
 				ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", msg.message.c_str());
+			}
+			else if (msg.is_anonymous) {	// We make the display of the message anonymous to other users and mark it as so for the sender,
+											// but the sender username is still stored along the message for everyone if we want this linking information for other purposes
+				if (msg.username == playerName)
+					ImGui::Text("(Anonymous) %s: %s", msg.username.c_str(), msg.message.c_str());
+				else
+					ImGui::Text("(Anonymous): %s", msg.message.c_str());
 			}
 			else {
 				ImGui::Text("%s: %s", msg.username.c_str(), msg.message.c_str());
@@ -148,7 +155,35 @@ bool ModuleNetworkingClient::gui()
 			// If a / is found, search for a command
 			if (str_message.find_first_of("/") != std::string::npos)
 			{
-				if (str_message.find("/whisper") != std::string::npos)
+				if (str_message.find("/help") != std::string::npos)
+				{
+					ChatMessage help_msg;
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changeusername <newname>\n /anonymous <message>\n /whisper <username>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /ping \n /logout | /exit | /quit";
+					help_msg.is_system = true;
+
+					messages.push_back(help_msg);
+				}
+				else if (str_message.find("/list") != std::string::npos)
+				{
+					OutputMemoryStream packet;
+					packet << ClientMessage::List;	// Message type
+					packet << playerName; // Username that sent the message
+
+					sendPacket(packet, socket);
+				}
+				else if (str_message.find("/anonymous") != std::string::npos)
+				{
+					OutputMemoryStream packet;
+					packet << ClientMessage::AnonChatMessage;
+
+					//Add infromation to the packet, WE ALWAYS WILL FOLLOW THIS FORMAT OF SERIALIZATION AND DE-SERIALIZATION
+					str_message.erase(0, 11);
+					packet << str_message;	//Message
+					packet << playerName;	//Username that sent the message
+
+					sendPacket(packet, socket);
+				}
+				else if (str_message.find("/whisper") != std::string::npos)
 				{
 					std::string dest_username;
 					std::size_t first_; std::size_t second_;
@@ -192,21 +227,6 @@ bool ModuleNetworkingClient::gui()
 
 					sendPacket(packet, socket);
 				}
-				else if (str_message.find("/help") != std::string::npos)
-				{
-					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /whisper <username>\n /kick <username>\n /TODO\n /TODO";
-
-					messages.push_back(help_msg);
-				}
-				else if (str_message.find("/list") != std::string::npos)
-				{
-					OutputMemoryStream packet;
-					packet << ClientMessage::List;	// Message type
-					packet << playerName; // Username that sent the message
-
-					sendPacket(packet, socket);
-				}
 				else if (str_message.find("/change_name") != std::string::npos)
 				{
 				}
@@ -245,11 +265,15 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		LOG("The username %s is already taken, please change your name and try again", playerName.c_str());
 		state = ClientState::Stopped;
 	}
-	else if (message_received == ServerMessage::ChatMessage)
+	else if (message_received == ServerMessage::ChatMessage || message_received == ServerMessage::AnonChatMessage)
 	{
 		ChatMessage chat_message;
 		packet >> chat_message.message;
 		packet >> chat_message.username;
+
+		//If the message is anonymous, censor the username for all clients which aren't the sender of the message
+		if (message_received == ServerMessage::AnonChatMessage)
+			chat_message.is_anonymous = true;
 
 		//Add the public message to our messages list
 		messages.push_back(chat_message);
@@ -290,6 +314,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	else if (message_received == ServerMessage::List)
 	{
 		ChatMessage list_message;
+		list_message.is_system = true;
 		list_message.message = " ****** Connected Users ******";
 		unsigned int num_users = 0;
 
