@@ -102,12 +102,12 @@ bool ModuleNetworkingClient::gui()
 			int a = 0;
 		}
 
-		for (auto msg : messages) {
+		for (auto& msg : messages) {
 			if (msg.is_whisper) {
 				ImGui::TextColored(ImVec4(128, 128, 128, 255), "(Whisper) %s: %s", msg.username.c_str(), msg.message.c_str());
 			}
 			else if (msg.username.compare("") == 0) {	// IF it's a system message
-				ImGui::Text("%s", msg.message.c_str());
+				ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", msg.message.c_str());
 			}
 			else {
 				ImGui::Text("%s: %s", msg.username.c_str(), msg.message.c_str());
@@ -195,14 +195,17 @@ bool ModuleNetworkingClient::gui()
 				else if (str_message.find("/help") != std::string::npos)
 				{
 					ChatMessage help_msg;
-					help_msg.is_whisper = false;
-					help_msg.username = "";
-					help_msg.message = " ****** Commands List ******\n /help\n /userlist\n /whisper <username>\n /kick <username>\n /TODO\n /TODO";
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /whisper <username>\n /kick <username>\n /TODO\n /TODO";
 
 					messages.push_back(help_msg);
 				}
 				else if (str_message.find("/list") != std::string::npos)
 				{
+					OutputMemoryStream packet;
+					packet << ClientMessage::List;	// Message type
+					packet << playerName; // Username that sent the message
+
+					sendPacket(packet, socket);
 				}
 				else if (str_message.find("/change_name") != std::string::npos)
 				{
@@ -283,6 +286,20 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		DLOG("User %s joined the chat.", username.c_str());
 		else if (connection_state == UserConnection::Left)
 		DLOG("User %s left the chat.", username.c_str());
+	}
+	else if (message_received == ServerMessage::List)
+	{
+		ChatMessage list_message;
+		list_message.message = " ****** Connected Users ******";
+		unsigned int num_users = 0;
+
+		packet >> num_users;
+		for (unsigned int i = 0; i < num_users; ++i) {
+			std::string username;
+			packet >> username;
+			list_message.message.append("\n - " + username);
+		}
+		messages.push_back(list_message);
 	}
 	else if (message_received == ServerMessage::Kick)
 	{

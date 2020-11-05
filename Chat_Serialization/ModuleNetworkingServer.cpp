@@ -199,6 +199,22 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 	}
+	else if (clientMessage == ClientMessage::List)
+	{
+		std::string request_username;
+		packet >> request_username;
+
+		OutputMemoryStream list_packet;
+		list_packet << ServerMessage::List;
+		list_packet << (unsigned int)connectedSockets.size();
+
+		for (auto& connectedSocket : connectedSockets)	// Serialize all user names
+		{
+			list_packet << connectedSocket.playerName;
+		}
+
+		sendPacket(list_packet, socket);
+	}
 	else if (clientMessage == ClientMessage::Kick)
 	{
 		std::string kicked_username;
