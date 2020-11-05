@@ -115,7 +115,10 @@ bool ModuleNetworkingClient::gui()
 		}
 		ImGui::PopTextWrapPos();
 
-		ImGui::SetScrollHereY(1.0f);
+		if (new_message) {	// If new message sent or recieved, scroll down immediately	//IMPROVE: Ideally, if recieved we should only scroll if we were already at the bottom to not interrupt reading of prev. messages
+			ImGui::SetScrollHereY(1.0f);
+			new_message = false;
+		}
 
 		ImGui::EndChild();
 
@@ -210,6 +213,8 @@ bool ModuleNetworkingClient::gui()
 				sendChatMessage(str_message);
 			}
 
+			new_message = true;
+
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget (Mark input text to not unselect after sending a message
 		}
 
@@ -246,6 +251,8 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		//Add the public message to our messages list
 		messages.push_back(chat_message);
 
+		new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+
 		//LOG to test
 		DLOG("Test Log:   %s : %s", chat_message.username.c_str(),chat_message.message.c_str());
 	}
@@ -259,6 +266,8 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		//Add the public message to our messages list
 		messages.push_back(chat_message);
+
+		new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
 
 		//LOG to test
 		DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());

@@ -73,5 +73,6 @@ private:
 	std::string playerName;
 
 	std::vector<ChatMessage> messages;
+	bool new_message = false;	// Used to request an auto-scroll down on a message sent or recieved
 };
 
