@@ -204,6 +204,23 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 	}
+	else if (clientMessage == ClientMessage::ChangeName)
+	{
+		std::string new_username;
+		std::string old_username;
+
+		packet >> new_username;
+		packet >> old_username;
+
+		OutputMemoryStream name_packet;
+		name_packet << ServerMessage::ChangeName;
+		
+		name_packet << new_username;
+		name_packet << old_username;
+
+		for (auto& connectedSocket : connectedSockets)
+			sendPacket(name_packet, connectedSocket.socket);
+	}
 	else if (clientMessage == ClientMessage::List)
 	{
 		std::string request_username;

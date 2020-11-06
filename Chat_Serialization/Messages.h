@@ -9,6 +9,7 @@ enum class ClientMessage
 	ChatMessage,
 	AnonChatMessage,
 	Whisper,
+	ChangeName,
 	Kick,
 	List
 };
@@ -20,6 +21,7 @@ enum class ServerMessage
 	ChatMessage,
 	AnonChatMessage,
 	Whisper,
+	ChangeName,
 	UserEvent,
 	Kick,
 	List

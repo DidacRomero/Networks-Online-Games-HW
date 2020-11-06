@@ -158,7 +158,7 @@ bool ModuleNetworkingClient::gui()
 				if (str_message.find("/help") != std::string::npos)
 				{
 					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changeusername <newname>\n /anonymous <message>\n /whisper <username>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /ping \n /logout | /exit | /quit";
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
 					help_msg.is_system = true;
 
 					messages.push_back(help_msg);
@@ -182,6 +182,23 @@ bool ModuleNetworkingClient::gui()
 					packet << playerName;	//Username that sent the message
 
 					sendPacket(packet, socket);
+				}
+				else if (str_message.find("/changename") != std::string::npos)
+				{
+					// We delete the first part: "/changename "
+					str_message.erase(0, 12);
+
+					if (!str_message.empty()) {	// We check that a new username has been given
+						OutputMemoryStream packet;
+						packet << ClientMessage::ChangeName;
+						packet << str_message;	// Message
+						packet << playerName;	// Username that sent the message
+
+						sendPacket(packet, socket);
+					}
+					else {
+						WLOG("You didn't input any new username!");
+					}
 				}
 				else if (str_message.find("/whisper") != std::string::npos)
 				{
@@ -298,6 +315,21 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		//LOG to test
 		DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
+	}
+	else if (message_received == ServerMessage::ChangeName)
+	{
+		std::string new_username;
+		std::string old_username;
+
+		packet >> new_username;
+		packet >> old_username;
+
+		for (ChatMessage& msg : messages) {
+			if (msg.username == old_username) {
+				msg.username = new_username;
+			}
+		}
+		if (playerName == old_username) { playerName = new_username; }
 	}
 	else if (message_received == ServerMessage::UserEvent)
 	{
