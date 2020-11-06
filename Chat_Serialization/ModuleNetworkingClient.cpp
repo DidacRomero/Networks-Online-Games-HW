@@ -158,7 +158,7 @@ bool ModuleNetworkingClient::gui()
 				if (str_message.find("/help") != std::string::npos)
 				{
 					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
 					help_msg.is_system = true;
 
 					messages.push_back(help_msg);
@@ -171,19 +171,24 @@ bool ModuleNetworkingClient::gui()
 
 					sendPacket(packet, socket);
 				}
-				else if (str_message.find("/anonymous") != std::string::npos)
+				else if (str_message.find("/anonymous ") != std::string::npos)
 				{
 					OutputMemoryStream packet;
 					packet << ClientMessage::AnonChatMessage;
 
-					//Add infromation to the packet, WE ALWAYS WILL FOLLOW THIS FORMAT OF SERIALIZATION AND DE-SERIALIZATION
 					str_message.erase(0, 11);
-					packet << str_message;	//Message
-					packet << playerName;	//Username that sent the message
 
-					sendPacket(packet, socket);
+					if (!str_message.empty()) {	// We check that a message has been given
+						packet << str_message;	//Message
+						packet << playerName;	//Username that sent the message
+
+						sendPacket(packet, socket);
+					}
+					else {
+						WLOG("You didn't input any anonymous message!");
+					}
 				}
-				else if (str_message.find("/changename") != std::string::npos)
+				else if (str_message.find("/changename ") != std::string::npos)
 				{
 					// We delete the first part: "/changename "
 					str_message.erase(0, 12);
@@ -200,31 +205,64 @@ bool ModuleNetworkingClient::gui()
 						WLOG("You didn't input any new username!");
 					}
 				}
-				else if (str_message.find("/whisper") != std::string::npos)
+				else if (str_message.find("/whisper ") != std::string::npos)
 				{
 					std::string dest_username;
-					std::size_t first_; std::size_t second_;
+					std::size_t user_end;
 
-					//Find the first space " " and the second space " " to extract the username between them
-					first_ = str_message.find(" ");
-					second_ = str_message.find(":");
+					str_message.erase(0, 9);	//Eliminate the command /whisper
 
-					//Extract the username
-					if (second_ < 128) //Make sure we are really sending a whisper, so we don't crash the app
-					{
-						int username_len = second_ - first_;
-						char buffer[128];
+					//Find the next space (where the username ends)
+					user_end = str_message.find(" ");
 
-						dest_username = str_message.substr(first_ +1, username_len -1);
-						//std::size_t length = str_message.copy(buffer, first_ - 1, username_len);
-						//buffer[username_len] = '\0';
+					if (user_end != std::string::npos && user_end != 0) {		//Check that formatting is correct
+						dest_username = str_message.substr(0, user_end);	//Record destination username
+						str_message.erase(0, user_end + 1);							//Delete username and the space separating it from the message
 
-						str_message.erase(0, second_ + 2);
-						sendChatMessage(str_message, true, dest_username);
+						if (str_message.size() > 0)
+							sendChatMessage(str_message, true, dest_username);
+						else
+							WLOG("No message given to whisper!");
 					}
-					else
-						WLOG("You didn't send a message to a user, the whisper won't be sent");
+					else {
+						WLOG("Incorrect use of whisper command! Expected format: /whisper <username> <message>");
+					}
+
+					////Extract the username
+					//if (second_ < 128) //Make sure we are really sending a whisper, so we don't crash the app
+					//{
+					//	int username_len = second_ - first_;
+					//	char buffer[128];
+
+					//	dest_username = str_message.substr(first_ +1, username_len -1);
+					//	//std::size_t length = str_message.copy(buffer, first_ - 1, username_len);
+					//	//buffer[username_len] = '\0';
+
+					//	str_message.erase(0, second_ + 2);
+					//	sendChatMessage(str_message, true, dest_username);
+					//}
+					//else
+					//	WLOG("You didn't send a message to a user, the whisper won't be sent");
 				}
+				//else if (str_message.find("/mute ") != std::string::npos)
+				//{
+				//	std::string banned_user;
+				//	std::size_t first; std::size_t second;
+
+				//	//Find the first space "<" and the second space ">" to extract the username between them
+				//	first = str_message.find("<");
+				//	second = str_message.find(">");
+
+				//	int username_len = second - first;
+
+				//	banned_user = str_message.substr(first + 1, username_len - 1);
+
+				//	OutputMemoryStream packet;
+				//	packet << ClientMessage::Kick;
+				//	packet << banned_user;
+
+				//	sendPacket(packet, socket);
+				//}
 				else if (str_message.find("/kick") != std::string::npos)
 				{
 					std::string banned_user;
@@ -244,9 +282,25 @@ bool ModuleNetworkingClient::gui()
 
 					sendPacket(packet, socket);
 				}
-				else if (str_message.find("/change_name") != std::string::npos)
-				{
-				}
+				//else if (str_message.find("/ban ") != std::string::npos)
+				//{
+				//std::string banned_user;
+				//std::size_t first; std::size_t second;
+
+				////Find the first space "<" and the second space ">" to extract the username between them
+				//first = str_message.find("<");
+				//second = str_message.find(">");
+
+				//int username_len = second - first;
+
+				//banned_user = str_message.substr(first + 1, username_len - 1);
+
+				//OutputMemoryStream packet;
+				//packet << ClientMessage::Kick;
+				//packet << banned_user;
+
+				//sendPacket(packet, socket);
+				//}
 			}
 			else
 			{
@@ -302,19 +356,27 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::Whisper)
 	{
-		ChatMessage chat_message;
-		chat_message.is_whisper = true;
-		packet >> chat_message.message;
-		packet >> chat_message.username;
-		packet >> chat_message.whispered_user;
+		bool dest_user_exists = true;
+		packet >> dest_user_exists;
 
-		//Add the public message to our messages list
-		messages.push_back(chat_message);
+		if (dest_user_exists) {
+			ChatMessage chat_message;
+			chat_message.is_whisper = true;
+			packet >> chat_message.message;
+			packet >> chat_message.username;
+			packet >> chat_message.whispered_user;
 
-		new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+			//Add the public message to our messages list
+			messages.push_back(chat_message);
 
-		//LOG to test
-		DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
+			new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+
+			//LOG to test
+			DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
+		}
+		else {
+			DLOG("Whispered user is not connected!");
+		}
 	}
 	else if (message_received == ServerMessage::ChangeName)
 	{

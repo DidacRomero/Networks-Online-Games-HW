@@ -179,9 +179,9 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 	else if (clientMessage == ClientMessage::Whisper)
 	{
 		//Same as message but we only send the message to the destined user
+		std::string dest_username;
 		std::string message;
 		std::string username;
-		std::string dest_username;
 
 		packet >> message;
 		packet >> username;
@@ -189,12 +189,14 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		OutputMemoryStream chat_packet;
 		chat_packet << ServerMessage::Whisper;
-		chat_packet << message;
-		chat_packet << username;
-		chat_packet << dest_username;
 
 		if (userIsConnected(dest_username))
 		{
+			chat_packet << true;	// This marks the whisper as succesful
+			chat_packet << message;
+			chat_packet << username;
+			chat_packet << dest_username;
+
 			for (auto& connectedSocket : connectedSockets)
 			{
 				//If the socket is not the listen socket, send them the public chat message
@@ -202,6 +204,10 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 					&& connectedSocket.playerName == username || connectedSocket.playerName == dest_username)
 					sendPacket(chat_packet, connectedSocket.socket);
 			}
+		}
+		else {
+			chat_packet << false;				// This marks the whisper as unsuccesful because the destination user is not connected
+			sendPacket(chat_packet, socket);
 		}
 	}
 	else if (clientMessage == ClientMessage::ChangeName)
