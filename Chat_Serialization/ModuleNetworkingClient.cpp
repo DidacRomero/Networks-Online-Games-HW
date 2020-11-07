@@ -115,7 +115,7 @@ bool ModuleNetworkingClient::gui()
 			else if (msg.is_anonymous) {	// We make the display of the message anonymous to other users and mark it as so for the sender,
 											// but the sender username is still stored along the message for everyone if we want this linking information for other purposes
 				if (msg.username == playerName)
-					ImGui::Text("(Anonymous) %s: %s", msg.username.c_str(), msg.message.c_str());
+					ImGui::Text("%s (as Anonymous): %s", msg.username.c_str(), msg.message.c_str());
 				else
 					ImGui::Text("(Anonymous): %s", msg.message.c_str());
 			}
@@ -161,7 +161,7 @@ bool ModuleNetworkingClient::gui()
 				if (str_message.find("/help") != std::string::npos)
 				{
 					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <username> \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <username> \n /global(un)mute <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
 					help_msg.is_system = true;
 
 					messages.push_back(help_msg);
@@ -247,25 +247,35 @@ bool ModuleNetworkingClient::gui()
 					//else
 					//	WLOG("You didn't send a message to a user, the whisper won't be sent");
 				}
-				//else if (str_message.find("/mute ") != std::string::npos)
-				//{
-				//	std::string banned_user;
-				//	std::size_t first; std::size_t second;
+				else if (str_message.find("/mute ") != std::string::npos)	//Locally mute a user
+				{
+					// We delete the first part: "/kick "
+					str_message.erase(0, 6);
 
-				//	//Find the first space "<" and the second space ">" to extract the username between them
-				//	first = str_message.find("<");
-				//	second = str_message.find(">");
+					if (!str_message.empty()) {	// We check that a new username has been given
+						local_mutes.push_back(str_message);
+					}
+					else {
+						WLOG("You didn't input any username to mute!");
+					}
+				}
+				else if (str_message.find("/unmute ") != std::string::npos)	//Locally unmute a user
+				{
+					// We delete the first part: "/kick "
+					str_message.erase(0, 8);
 
-				//	int username_len = second - first;
-
-				//	banned_user = str_message.substr(first + 1, username_len - 1);
-
-				//	OutputMemoryStream packet;
-				//	packet << ClientMessage::Kick;
-				//	packet << banned_user;
-
-				//	sendPacket(packet, socket);
-				//}
+					if (!str_message.empty()) {	// We check that a new username has been given
+						for (std::vector<std::string>::iterator it = local_mutes.begin(); it != local_mutes.end(); next(it)) {
+							if (str_message == *it) {
+								local_mutes.erase(it);
+								break;
+							}
+						}
+					}
+					else {
+						WLOG("You didn't input any username to unmute!");
+					}
+				}
 				else if (str_message.find("/kick ") != std::string::npos)
 				{
 					// We delete the first part: "/kick "
@@ -346,17 +356,34 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> chat_message.message;
 		packet >> chat_message.username;
 
+		bool muted_user = false;
+
 		//If the message is anonymous, censor the username for all clients which aren't the sender of the message
 		if (message_received == ServerMessage::AnonChatMessage)
 			chat_message.is_anonymous = true;
 
-		//Add the public message to our messages list
-		messages.push_back(chat_message);
+		if (!chat_message.is_anonymous) {	// If not anonymous, check if muted
+			for (std::string user : local_mutes) {	// Check if user is muted locally
+				if (user == chat_message.username) {
+					muted_user = true;
+					break;
+				}
+			}
+		}
 
-		new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+		if (!muted_user) {	// If user muted
 
-		//LOG to test
-		DLOG("Test Log:   %s : %s", chat_message.username.c_str(),chat_message.message.c_str());
+			//Add the public message to our messages list
+			messages.push_back(chat_message);
+
+			new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+
+			//LOG to test
+			DLOG("Test Log:   %s : %s", chat_message.username.c_str(), chat_message.message.c_str());
+		}
+		else {
+			DLOG("(MUTED) %s: %s", chat_message.username.c_str(), chat_message.message.c_str());
+		}
 	}
 	else if (message_received == ServerMessage::Whisper)
 	{

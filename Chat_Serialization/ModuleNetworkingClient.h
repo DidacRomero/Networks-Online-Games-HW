@@ -75,6 +75,7 @@ private:
 	std::string playerName;
 
 	std::vector<ChatMessage> messages;
+	std::vector<std::string> local_mutes;
 	bool new_message = false;	// Used to request an auto-scroll down on a message sent or recieved
 };
 
