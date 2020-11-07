@@ -525,7 +525,13 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::Kick)
 	{
-		state = ClientState::Stopped;
+		bool kick_success = false;
+		packet >> kick_success;
+
+		if (kick_success)
+			state = ClientState::Stopped;
+		else
+			WLOG("The user you tried to kick is not connected or has changed names!");
 	}
 	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
 	//state = ClientState::Stopped;

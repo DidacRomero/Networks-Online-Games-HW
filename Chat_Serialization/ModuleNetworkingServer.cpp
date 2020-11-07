@@ -277,16 +277,24 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		OutputMemoryStream kick_packet;
 		kick_packet << ServerMessage::Kick;
-
+		
+		bool player_found = false;
 		for (auto& connectedSocket : connectedSockets)
 		{
 			//If the socket has the same username, send kick 
 			if (connectedSocket.playerName == kicked_username)
 			{
+				player_found = true;
+				kick_packet << true;	//Flag to mark operation succesful
 				sendPacket(kick_packet, connectedSocket.socket);
 				onSocketDisconnected(connectedSocket.socket);
 				break;
 			}
+		}
+
+		if (!player_found) {
+			kick_packet << false;
+			sendPacket(kick_packet, socket);
 		}
 	}
 	else if (clientMessage == ClientMessage::MuteList)
