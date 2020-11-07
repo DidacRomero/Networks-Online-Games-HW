@@ -50,6 +50,7 @@ private:
 
 	bool userIsConnected(std::string &username);
 
+	bool muteRequest(SOCKET socket, const InputMemoryStream& packet, ServerMessage mute_or_unmute);
 
 
 	//////////////////////////////////////////////////////////////////////

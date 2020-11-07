@@ -55,6 +55,8 @@ private:
 
 	void sendKick(std::string &username);
 
+	void muteUser(std::string& username, bool muting);
+
 
 	//////////////////////////////////////////////////////////////////////
 	// Client state
@@ -75,7 +77,8 @@ private:
 	std::string playerName;
 
 	std::vector<ChatMessage> messages;
-	std::vector<std::string> local_mutes;
+	std::vector<std::string> local_mutes;	// For local, we stop messages from coming in (only one person doesn't want to recieve them)
+	bool globally_muted = false;			// For global, we stop messages from being sent (no one is expected to see them after all)
 	bool new_message = false;	// Used to request an auto-scroll down on a message sent or recieved
 };
 

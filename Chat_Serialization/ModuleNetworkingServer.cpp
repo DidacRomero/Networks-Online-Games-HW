@@ -265,6 +265,14 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		sendPacket(list_packet, socket);
 	}
+	else if (clientMessage == ClientMessage::Mute)
+	{
+		muteRequest(socket, packet, ServerMessage::Mute);
+	}
+	else if (clientMessage == ClientMessage::UnMute)
+	{
+		muteRequest(socket, packet, ServerMessage::UnMute);
+	}
 	else if (clientMessage == ClientMessage::Kick)
 	{
 		std::string kicked_username;
@@ -357,3 +365,45 @@ bool ModuleNetworkingServer::userIsConnected(std::string &username)
 	return false;
 }
 
+bool ModuleNetworkingServer::muteRequest(SOCKET socket, const InputMemoryStream& packet, ServerMessage mute_or_unmute)
+{
+	std::string muted_user;
+	std::string mute_mode;
+
+	packet >> muted_user;
+	packet >> mute_mode;
+
+	OutputMemoryStream mute_packet;
+	mute_packet << mute_or_unmute;	// Mark mute purpose, if mute or unmute
+
+	bool user_found = false;
+
+	for (auto& connectedSocket : connectedSockets)
+	{
+		//If the socket has the same username, we confirm it exists
+		if (connectedSocket.playerName == muted_user)
+		{
+			user_found = true;
+
+			mute_packet << true;		// Flag user exists
+			mute_packet << muted_user;	// Mute target
+			mute_packet << mute_mode;	// Mute mode
+
+			if (mute_mode == "local") {	// If local, we tell sender client we found muted user exists
+				sendPacket(mute_packet, socket);
+			}
+			else {	// If global, we tell the muted client that he's muted
+				sendPacket(mute_packet, connectedSocket.socket);
+			}
+
+			break;
+		}
+	}
+
+	if (!user_found) {
+		mute_packet << false;	// Flag that user was not found, return to sender AND ONLY SENDER
+		sendPacket(mute_packet, socket);
+	}
+
+	return true;
+}
