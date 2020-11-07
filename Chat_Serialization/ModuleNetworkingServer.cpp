@@ -270,16 +270,17 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string kicked_username;
 		packet >> kicked_username;
 
-		OutputMemoryStream ban_packet;
-		ban_packet << ServerMessage::Kick;
+		OutputMemoryStream kick_packet;
+		kick_packet << ServerMessage::Kick;
 
 		for (auto& connectedSocket : connectedSockets)
 		{
-			//If the socket has the same username, send ban 
+			//If the socket has the same username, send kick 
 			if (connectedSocket.playerName == kicked_username)
 			{
-				sendPacket(ban_packet, connectedSocket.socket);
+				sendPacket(kick_packet, connectedSocket.socket);
 				onSocketDisconnected(connectedSocket.socket);
+				break;
 			}
 		}
 	}

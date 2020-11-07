@@ -263,24 +263,21 @@ bool ModuleNetworkingClient::gui()
 
 				//	sendPacket(packet, socket);
 				//}
-				else if (str_message.find("/kick") != std::string::npos)
+				else if (str_message.find("/kick ") != std::string::npos)
 				{
-					std::string banned_user;
-					std::size_t first; std::size_t second;
+					// We delete the first part: "/kick "
+					str_message.erase(0, 6);
 
-					//Find the first space "<" and the second space ">" to extract the username between them
-					first = str_message.find("<");
-					second = str_message.find(">");
+					if (!str_message.empty()) {	// We check that a new username has been given
+						OutputMemoryStream packet;
+						packet << ClientMessage::Kick;
+						packet << str_message;	// Message
 
-					int username_len = second - first;
-
-					banned_user = str_message.substr(first + 1, username_len - 1);
-
-					OutputMemoryStream packet;
-					packet << ClientMessage::Kick;
-					packet << banned_user;
-
-					sendPacket(packet, socket);
+						sendPacket(packet, socket);
+					}
+					else {
+						WLOG("You didn't input any username to kick!");
+					}
 				}
 				//else if (str_message.find("/ban ") != std::string::npos)
 				//{
