@@ -218,14 +218,36 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> new_username;
 		packet >> old_username;
 
+		ConnectedSocket* socket_ptr = nullptr;
+
+		bool name_taken = false;
+		for (int i = 0; !name_taken && i < connectedSockets.size(); ++i) {	//Check that the name is not taken by another user
+			if (connectedSockets[i].socket != this->listenSocket) {
+				if (connectedSockets[i].socket == socket) {		// Locate & Save client who requested the namechange in the server list
+					socket_ptr = &connectedSockets[i];
+				}
+				else if (connectedSockets[i].playerName == new_username) {
+					name_taken = true;
+				}
+			}
+		}
+
 		OutputMemoryStream name_packet;
 		name_packet << ServerMessage::ChangeName;
-		
-		name_packet << new_username;
-		name_packet << old_username;
+		name_packet << name_taken;
 
-		for (auto& connectedSocket : connectedSockets)
-			sendPacket(name_packet, connectedSocket.socket);
+		if (!name_taken) {	//If the new username is not taken, we change his name on the server user list and send a packet to everyone stating the name change of the user who made the request
+			socket_ptr->playerName = new_username;
+			name_packet << new_username;
+			name_packet << old_username;
+
+			for (auto& connectedSocket : connectedSockets)
+				if (connectedSocket.socket != this->listenSocket)
+					sendPacket(name_packet, connectedSocket.socket);
+		}
+		else {				//Otherwise, we send to the user who made the request an "operation failed" flag because of the taken username
+			sendPacket(name_packet, socket);
+		}
 	}
 	else if (clientMessage == ClientMessage::List)
 	{

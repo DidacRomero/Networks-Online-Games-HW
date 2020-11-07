@@ -380,18 +380,25 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::ChangeName)
 	{
-		std::string new_username;
-		std::string old_username;
+		bool taken_username = false;
+		packet >> taken_username;
 
-		packet >> new_username;
-		packet >> old_username;
+		if (taken_username)
+			DLOG("Username requested is taken by another connected user!");
+		else {
+			std::string new_username;
+			std::string old_username;
 
-		for (ChatMessage& msg : messages) {
-			if (msg.username == old_username) {
-				msg.username = new_username;
+			packet >> new_username;
+			packet >> old_username;
+
+			for (ChatMessage& msg : messages) {
+				if (msg.username == old_username) {
+					msg.username = new_username;
+				}
 			}
+			if (playerName == old_username) { playerName = new_username; }
 		}
-		if (playerName == old_username) { playerName = new_username; }
 	}
 	else if (message_received == ServerMessage::UserEvent)
 	{
