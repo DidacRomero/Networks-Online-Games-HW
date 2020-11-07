@@ -12,6 +12,7 @@ enum class ClientMessage
 	ChangeName,
 	Mute,
 	UnMute,
+	MuteList,
 	Kick,
 	List
 };
@@ -27,6 +28,7 @@ enum class ServerMessage
 	UserEvent,
 	Mute,
 	UnMute,
+	MuteList,
 	Kick,
 	List
 };

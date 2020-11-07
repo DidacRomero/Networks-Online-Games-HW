@@ -75,5 +75,7 @@ private:
 	};
 
 	std::vector<ConnectedSocket> connectedSockets;
+	std::vector<std::string> muted_users;
+	std::vector<std::string> banned_users;
 };
 

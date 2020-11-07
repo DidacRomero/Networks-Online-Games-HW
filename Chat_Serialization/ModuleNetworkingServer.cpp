@@ -251,9 +251,6 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (clientMessage == ClientMessage::List)
 	{
-		std::string request_username;
-		packet >> request_username;
-
 		OutputMemoryStream list_packet;
 		list_packet << ServerMessage::List;
 		list_packet << (unsigned int)connectedSockets.size();
@@ -291,6 +288,19 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 				break;
 			}
 		}
+	}
+	else if (clientMessage == ClientMessage::MuteList)
+	{
+		OutputMemoryStream mutelist_packet;
+		mutelist_packet << ServerMessage::MuteList;
+		mutelist_packet << (unsigned int)muted_users.size();
+		
+		for (std::string& m_user : muted_users)	// Serialize all user names
+		{
+			mutelist_packet << m_user;
+		}
+
+		sendPacket(mutelist_packet, socket);
 	}
 }
 
@@ -392,7 +402,27 @@ bool ModuleNetworkingServer::muteRequest(SOCKET socket, const InputMemoryStream&
 			if (mute_mode == "local") {	// If local, we tell sender client we found muted user exists
 				sendPacket(mute_packet, socket);
 			}
-			else {	// If global, we tell the muted client that he's muted
+			else {	// If global
+
+				bool muted_user_registered = false;
+
+				for (std::vector<std::string>::iterator it = muted_users.begin(); it != muted_users.end(); ++it) {
+					if ((*it) == muted_user) {
+						
+						muted_user_registered = true;	// Flag that the user is inside the server mute list
+
+						if (mute_or_unmute == ServerMessage::UnMute)	// Remove from list if the order is to UNMUTE
+							muted_users.erase(it);
+
+						break;
+					}
+				}
+
+				if (mute_or_unmute == ServerMessage::Mute && !muted_user_registered) {	// If the order is to MUTE and he's not on the list, add it
+					muted_users.push_back(muted_user);
+				}
+
+				// Tell all clients about the global mute
 				sendPacket(mute_packet, connectedSocket.socket);
 			}
 

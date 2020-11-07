@@ -153,156 +153,151 @@ bool ModuleNetworkingClient::gui()
 		{
 			// Send the PUBLIC message here
 			std::string str_message = str1;
-			strcpy_s(str1, strlen(str1), "");
+			if (str_message.size() > 0) {
 
-			// If a / is found, search for a command
-			if (str_message.find_first_of("/") != std::string::npos)
-			{
-				if (str_message.find("/help") != std::string::npos)
+				strcpy_s(str1, strlen(str1), "");
+
+				// If a / is found, search for a command
+				if (str_message.find_first_of("/") != std::string::npos)
 				{
-					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
-					help_msg.is_system = true;
+					if (str_message.find("/help") != std::string::npos)
+					{
+						ChatMessage help_msg;
+						help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
+						help_msg.is_system = true;
 
-					messages.push_back(help_msg);
-					new_message = true;
-				}
-				else if (str_message.find("/list") != std::string::npos)
-				{
-					OutputMemoryStream packet;
-					packet << ClientMessage::List;	// Message type
-					packet << playerName; // Username that sent the message
-
-					sendPacket(packet, socket);
-				}
-				else if (str_message.find("/anonymous ") != std::string::npos)
-				{
-					OutputMemoryStream packet;
-					packet << ClientMessage::AnonChatMessage;
-
-					str_message.erase(0, 11);
-
-					if (!str_message.empty()) {	// We check that a message has been given
-						packet << str_message;	//Message
-						packet << playerName;	//Username that sent the message
-
-						sendPacket(packet, socket);
+						messages.push_back(help_msg);
+						new_message = true;
 					}
-					else {
-						WLOG("You didn't input any anonymous message!");
-					}
-				}
-				else if (str_message.find("/changename ") != std::string::npos)
-				{
-					// We delete the first part: "/changename "
-					str_message.erase(0, 12);
-
-					if (!str_message.empty()) {	// We check that a new username has been given
+					else if (str_message.find("/list") != std::string::npos)
+					{
 						OutputMemoryStream packet;
-						packet << ClientMessage::ChangeName;
-						packet << str_message;	// Message
-						packet << playerName;	// Username that sent the message
+						packet << ClientMessage::List;	// Message type
 
 						sendPacket(packet, socket);
 					}
-					else {
-						WLOG("You didn't input any new username!");
-					}
-				}
-				else if (str_message.find("/whisper ") != std::string::npos)
-				{
-					std::string dest_username;
-					std::size_t user_end;
-
-					str_message.erase(0, 9);	//Eliminate the command /whisper
-
-					//Find the next space (where the username ends)
-					user_end = str_message.find(" ");
-
-					if (user_end != std::string::npos && user_end != 0) {		//Check that formatting is correct
-						dest_username = str_message.substr(0, user_end);	//Record destination username
-						str_message.erase(0, user_end + 1);							//Delete username and the space separating it from the message
-
-						if (str_message.size() > 0)
-							sendChatMessage(str_message, true, dest_username);
-						else
-							WLOG("No message given to whisper!");
-					}
-					else {
-						WLOG("Incorrect use of whisper command! Expected format: /whisper <username> <message>");
-					}
-				}
-				else if (str_message.find("/mute ") != std::string::npos)	//Mute a user
-				{
-					str_message.erase(0, 6);	//Eliminate the command /mute
-					muteUser(str_message, true);
-				}
-				else if (str_message.find("/unmute ") != std::string::npos)	//Unmute a user
-				{
-					str_message.erase(0, 8);	//Eliminate the command /unmute
-					muteUser(str_message, false);
-				}
-				else if (str_message.find("/mutelist") != std::string::npos)
-				{
-					ChatMessage mute_list_msg; 
-					mute_list_msg.message = " ****** Locally Muted Users ******";
-
-					for (auto& muted_user : local_mutes)
-						mute_list_msg.message.append("\n - " + muted_user);
-
-					mute_list_msg.message.append("\n\n ****** Globally Muted Users ******");
-
-					/*for (auto& muted_user : global_mutes)
-						mute_list_msg.message.append("\n - " + muted_user);*/
-					
-					mute_list_msg.is_system = true;
-
-					messages.push_back(mute_list_msg);
-					new_message = true;
-				}
-				else if (str_message.find("/kick ") != std::string::npos)
-				{
-					// We delete the first part: "/kick "
-					str_message.erase(0, 6);
-
-					if (!str_message.empty()) {	// We check that a new username has been given
+					else if (str_message.find("/anonymous ") != std::string::npos)
+					{
 						OutputMemoryStream packet;
-						packet << ClientMessage::Kick;
-						packet << str_message;	// Message
+						packet << ClientMessage::AnonChatMessage;
+
+						str_message.erase(0, 11);
+
+						if (!str_message.empty()) {	// We check that a message has been given
+							packet << str_message;	//Message
+							packet << playerName;	//Username that sent the message
+
+							sendPacket(packet, socket);
+						}
+						else {
+							WLOG("You didn't input any anonymous message!");
+						}
+					}
+					else if (str_message.find("/changename ") != std::string::npos)
+					{
+						// We delete the first part: "/changename "
+						str_message.erase(0, 12);
+
+						if (!str_message.empty()) {	// We check that a new username has been given
+							OutputMemoryStream packet;
+							packet << ClientMessage::ChangeName;
+							packet << str_message;	// Message
+							packet << playerName;	// Username that sent the message
+
+							sendPacket(packet, socket);
+						}
+						else {
+							WLOG("You didn't input any new username!");
+						}
+					}
+					else if (str_message.find("/whisper ") != std::string::npos)
+					{
+						std::string dest_username;
+						std::size_t user_end;
+
+						str_message.erase(0, 9);	//Eliminate the command /whisper
+
+						//Find the next space (where the username ends)
+						user_end = str_message.find(" ");
+
+						if (user_end != std::string::npos && user_end != 0) {	//Check that formatting is correct
+							dest_username = str_message.substr(0, user_end);	//Record destination username
+							str_message.erase(0, user_end + 1);					//Delete username and the space separating it from the message
+
+							if (str_message.size() > 0) {
+								if (dest_username != playerName)
+									sendChatMessage(str_message, true, dest_username);
+								else
+									WLOG("Whispering yourself is kinda pointless.");
+							}
+							else
+								WLOG("No message given to whisper!");
+						}
+						else {
+							WLOG("Incorrect use of whisper command! Expected format: /whisper <username> <message>");
+						}
+					}
+					else if (str_message.find("/mute ") != std::string::npos)	//Mute a user
+					{
+						str_message.erase(0, 6);	//Eliminate the command /mute
+						muteUser(str_message, true);
+					}
+					else if (str_message.find("/unmute ") != std::string::npos)	//Unmute a user
+					{
+						str_message.erase(0, 8);	//Eliminate the command /unmute
+						muteUser(str_message, false);
+					}
+					else if (str_message.find("/mutelist") != std::string::npos)
+					{
+						OutputMemoryStream packet;
+						packet << ClientMessage::MuteList;	// Message type
 
 						sendPacket(packet, socket);
 					}
-					else {
-						WLOG("You didn't input any username to kick!");
+					else if (str_message.find("/kick ") != std::string::npos)
+					{
+						// We delete the first part: "/kick "
+						str_message.erase(0, 6);
+
+						if (!str_message.empty()) {	// We check that a new username has been given
+							OutputMemoryStream packet;
+							packet << ClientMessage::Kick;
+							packet << str_message;	// Message
+
+							sendPacket(packet, socket);
+						}
+						else {
+							WLOG("You didn't input any username to kick!");
+						}
+					}
+					//else if (str_message.find("/ban ") != std::string::npos)
+					//{
+					//std::string banned_user;
+					//std::size_t first; std::size_t second;
+
+					////Find the first space "<" and the second space ">" to extract the username between them
+					//first = str_message.find("<");
+					//second = str_message.find(">");
+
+					//int username_len = second - first;
+
+					//banned_user = str_message.substr(first + 1, username_len - 1);
+
+					//OutputMemoryStream packet;
+					//packet << ClientMessage::Kick;
+					//packet << banned_user;
+
+					//sendPacket(packet, socket);
+					//}
+					else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
+					{
+						state = ClientState::Stopped;
 					}
 				}
-				//else if (str_message.find("/ban ") != std::string::npos)
-				//{
-				//std::string banned_user;
-				//std::size_t first; std::size_t second;
-
-				////Find the first space "<" and the second space ">" to extract the username between them
-				//first = str_message.find("<");
-				//second = str_message.find(">");
-
-				//int username_len = second - first;
-
-				//banned_user = str_message.substr(first + 1, username_len - 1);
-
-				//OutputMemoryStream packet;
-				//packet << ClientMessage::Kick;
-				//packet << banned_user;
-
-				//sendPacket(packet, socket);
-				//}
-				else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
+				else
 				{
-					state = ClientState::Stopped;
+					sendChatMessage(str_message);
 				}
-			}
-			else
-			{
-				sendChatMessage(str_message);
 			}
 
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget (Mark input text to not unselect after sending a message
@@ -329,7 +324,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::NonWelcome)
 	{
-		LOG("The username %s is already taken, please change your name and try again", playerName.c_str());
+		WLOG("The username %s is already taken, please change your name and try again", playerName.c_str());
 		state = ClientState::Stopped;
 	}
 	else if (message_received == ServerMessage::ChatMessage || message_received == ServerMessage::AnonChatMessage)
@@ -386,7 +381,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
 		}
 		else {
-			DLOG("Whispered user is not connected!");
+			WLOG("Whispered user is not connected!");
 		}
 	}
 	else if (message_received == ServerMessage::ChangeName)
@@ -395,7 +390,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> taken_username;
 
 		if (taken_username)
-			DLOG("Username requested is taken by another connected user!");
+			WLOG("Username requested is taken by another connected user!");
 		else {
 			std::string new_username;
 			std::string old_username;
@@ -466,7 +461,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 		else {	//If user was not found, it means we are the sender of the original message and we got a response from the server
-			DLOG("The user you tried to mute is not connected or has changed names!");
+			WLOG("The user you tried to mute is not connected or has changed names!");
 		}
 	}
 	else if (message_received == ServerMessage::UnMute)
@@ -482,7 +477,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			packet >> mute_mode;
 
 			if (mute_mode == "local") {	//If it's a local mute, we search and remove him from our local mute list
-				for (std::vector<std::string>::iterator it = local_mutes.begin(); it != local_mutes.end(); next(it)) {
+				for (std::vector<std::string>::iterator it = local_mutes.begin(); it != local_mutes.end(); ++it) {
 					if ((*it) == muted_user) {
 						local_mutes.erase(it);
 						DLOG("You LOCALLY UNMUTED %s!", muted_user.c_str());
@@ -501,8 +496,32 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 		else {	//If user was not found, it means we are the sender of the original message and we got a response from the server
-			DLOG("The user you tried to unmute is not connected or has changed names!");
+			WLOG("The user you tried to unmute is not connected or has changed names!");
 		}
+	}
+	else if (message_received == ServerMessage::MuteList)
+	{
+		ChatMessage mute_list_msg;
+		mute_list_msg.message = " ****** Locally Muted Users ******";
+
+		for (std::string& muted_user : local_mutes)
+			mute_list_msg.message.append("\n - " + muted_user);
+
+		mute_list_msg.message.append("\n\n ****** Globally Muted Users ******");
+
+		unsigned int global_list_size = 0;
+		packet >> global_list_size;
+
+		for (unsigned int i = 0; i < global_list_size; ++i) {
+			std::string muted_user;
+			packet >> muted_user;
+			mute_list_msg.message.append("\n - " + muted_user);
+		}
+
+		mute_list_msg.is_system = true;
+
+		messages.push_back(mute_list_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::Kick)
 	{
@@ -566,17 +585,22 @@ void ModuleNetworkingClient::muteUser(std::string& message, bool muting)
 
 		if (mute_mode == "local" || mute_mode == "global") {	// Mark mute mode
 
-			OutputMemoryStream packet;
+			if (muting && message == playerName) {
+				WLOG("Muting yourself is kinda pointless.");
+			}
+			else {
+				OutputMemoryStream packet;
 
-			if (muting)
-				packet << ClientMessage::Mute;
-			else
-				packet << ClientMessage::UnMute;
+				if (muting)
+					packet << ClientMessage::Mute;
+				else
+					packet << ClientMessage::UnMute;
 
-			packet << message;		// Mute User Target
-			packet << mute_mode;	// Mute Mode
+				packet << message;		// Mute User Target
+				packet << mute_mode;	// Mute Mode
 
-			sendPacket(packet, socket);
+				sendPacket(packet, socket);
+			}
 		}
 		else {
 			WLOG("Incorrect input of Mute Mode parameter. Expected <global> or <local> without <>.");
