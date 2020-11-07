@@ -161,7 +161,7 @@ bool ModuleNetworkingClient::gui()
 				if (str_message.find("/help") != std::string::npos)
 				{
 					ChatMessage help_msg;
-					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <username> <local/global> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
+					help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
 					help_msg.is_system = true;
 
 					messages.push_back(help_msg);
