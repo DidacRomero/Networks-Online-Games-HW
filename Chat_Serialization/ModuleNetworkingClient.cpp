@@ -301,6 +301,10 @@ bool ModuleNetworkingClient::gui()
 
 				//sendPacket(packet, socket);
 				//}
+				else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
+				{
+					state = ClientState::Stopped;
+				}
 			}
 			else
 			{
