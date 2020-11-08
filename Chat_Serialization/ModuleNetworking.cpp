@@ -15,6 +15,7 @@ bool ModuleNetworking::sendPacket(const OutputMemoryStream & packet, SOCKET sock
 		reportError("send");
 		return false;
 	}
+	return true;
 }
 
 

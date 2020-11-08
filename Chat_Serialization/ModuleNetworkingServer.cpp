@@ -282,6 +282,19 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 	{
 		muteRequest(socket, packet, ServerMessage::UnMute);
 	}
+	else if (clientMessage == ClientMessage::MuteList)
+	{
+		OutputMemoryStream mutelist_packet;
+		mutelist_packet << ServerMessage::MuteList;
+		mutelist_packet << (unsigned int)muted_users.size();
+
+		for (std::string& m_user : muted_users)	// Serialize all user names
+		{
+			mutelist_packet << m_user;
+		}
+
+		sendPacket(mutelist_packet, socket);
+	}
 	else if (clientMessage == ClientMessage::Kick)
 	{
 		std::string kicked_username;
@@ -317,19 +330,6 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		else {
 			sendPacket(kick_packet, socket);
 		}
-	}
-	else if (clientMessage == ClientMessage::MuteList)
-	{
-		OutputMemoryStream mutelist_packet;
-		mutelist_packet << ServerMessage::MuteList;
-		mutelist_packet << (unsigned int)muted_users.size();
-		
-		for (std::string& m_user : muted_users)	// Serialize all user names
-		{
-			mutelist_packet << m_user;
-		}
-
-		sendPacket(mutelist_packet, socket);
 	}
 	else if (clientMessage == ClientMessage::Ban)
 	{
