@@ -127,14 +127,14 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		// Check for a repeated name
 		for (auto& connectedSocket : connectedSockets)
 			if (connectedSocket.playerName == playerName) {
-				refusal_reason = "Username already taken by another user";
+				refusal_reason = "Username already taken by another user.";
 				refuse_connection = true;
 			}
 
 		// Check for a user ban
 		for (std::string& user_ban : banned_users)
 			if (user_ban == playerName) {
-				refusal_reason = "Banned from the server";
+				refusal_reason = "Banned from the server.";
 				refuse_connection = true;
 			}
 

@@ -331,6 +331,13 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> welcome_message;
 
 		LOG("%s", welcome_message.c_str());
+
+		ChatMessage help_msg;
+		help_msg.message = welcome_message;
+		help_msg.is_system = true;
+
+		messages.push_back(help_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::NonWelcome)
 	{
@@ -439,15 +446,25 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string username;
 		packet >> username;
 
-		if(connection_state == UserConnection::Joined)
-			DLOG("User %s joined the chat.", username.c_str());
-		else if (connection_state == UserConnection::Left)
-			DLOG("User %s left the chat.", username.c_str());
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
+
+		if (connection_state == UserConnection::Joined) {
+			chat_msg.message = std::string("User " + username + " joined the chat.");
+		}
+		else if (connection_state == UserConnection::Left) {
+			chat_msg.message = std::string("User " + username + " left the chat.");
+		}
 		else if (connection_state == UserConnection::Aborted) {
 			std::string abort_reason;
 			packet >> abort_reason;
-			DLOG("User %s tried to join the chat, but was automatically kicked. Reason: %s.", username.c_str(), abort_reason.c_str());
+			chat_msg.message = std::string("User " + username + " tried to join the chat, but was automatically kicked. Reason: " + abort_reason);
 		}
+
+		DLOG(chat_msg.message.c_str());
+
+		messages.push_back(chat_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::List)
 	{
@@ -470,6 +487,9 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		bool user_found = true;
 		packet >> user_found;
 
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
+
 		if (user_found) {
 			std::string muted_user;
 			std::string mute_mode;
@@ -479,26 +499,36 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 			if (mute_mode == "local") {	//If it's a local mute, we add him to our local mute list
 				local_mutes.push_back(muted_user);
-				DLOG("You locally muted %s!", muted_user.c_str());
+				chat_msg.message = std::string("You locally muted " + muted_user);
+				DLOG(chat_msg.message.c_str());
 			}
 			else {
 				if (muted_user == playerName) {	//If it's global, we check if we are the target
 					globally_muted = true;	//If we are, we mark ourselves as muted
-					DLOG("You have been GLOBALLY MUTED!");
+					chat_msg.message = std::string("You have been GLOBALLY MUTED!");
 				}
 				else {
-					DLOG("%s has been GLOBALLY MUTED!", muted_user.c_str());
+					chat_msg.message = std::string(muted_user + " has been GLOBALLY MUTED!");
 				}
+
+				DLOG(chat_msg.message.c_str());
 			}
 		}
 		else {	//If user was not found, it means we are the sender of the original message and we got a response from the server
-			WLOG("The user you tried to mute is not connected or has changed names!");
+			chat_msg.message = std::string("The user you tried to mute is not connected or has changed names!");
+			WLOG(chat_msg.message.c_str());
 		}
+
+		messages.push_back(chat_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::UnMute)
 	{
 		bool user_found = true;
 		packet >> user_found;
+
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
 
 		if (user_found) {
 			std::string muted_user;
@@ -511,7 +541,8 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 				for (std::vector<std::string>::iterator it = local_mutes.begin(); it != local_mutes.end(); ++it) {
 					if ((*it) == muted_user) {
 						local_mutes.erase(it);
-						DLOG("You LOCALLY UNMUTED %s!", muted_user.c_str());
+						chat_msg.message = std::string("You LOCALLY UNMUTED " + muted_user + " !");
+						DLOG(chat_msg.message.c_str());
 						break;
 					}
 				}
@@ -519,16 +550,22 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			else {
 				if (muted_user == playerName) {	//If it's global, we check if we are the target
 					globally_muted = false;	//If we are, we mark ourselves as unmuted
-					DLOG("You have been GLOBALLY UNMUTED!");
+					chat_msg.message = std::string("You have been GLOBALLY UNMUTED!");
 				}
 				else {
-					DLOG("%s has been GLOBALLY UNMUTED!", muted_user.c_str());
+					chat_msg.message = std::string(muted_user + " has been GLOBALLY UNMUTED!");
 				}
+
+				DLOG(chat_msg.message.c_str());
 			}
 		}
 		else {	//If user was not found, it means we are the sender of the original message and we got a response from the server
-			WLOG("The user you tried to unmute is not connected or has changed names!");
+			chat_msg.message = std::string("The user you tried to unmute is not connected or has changed names!");
+			WLOG(chat_msg.message.c_str());
 		}
+
+		messages.push_back(chat_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::MuteList)
 	{
@@ -559,6 +596,9 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		bool kick_success = false;
 		packet >> kick_success;
 		
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
+		
 		if (kick_success) {
 			std::string kicked_user;
 			packet >> kicked_user;
@@ -569,11 +609,20 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 				state = ClientState::Stopped;
 			}
 			else {
+				chat_msg.message = std::string(kicked_user + " has been KICKED!");
 				WLOG("%s has been KICKED!", kicked_user.c_str());
+
+				messages.push_back(chat_msg);
+				new_message = true;
 			}
 		}
-		else
-			WLOG("The user you tried to kick is not connected or has changed names!");
+		else {
+			chat_msg.message = std::string("The user you tried to kick is not connected or has changed names!");
+			WLOG(chat_msg.message.c_str());
+
+			messages.push_back(chat_msg);
+			new_message = true;
+		}
 	}
 	else if (message_received == ServerMessage::Ban)
 	{
@@ -581,20 +630,35 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		packet >> banned_user;
 
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
+
 		if (banned_user == playerName) {	//We check if we are the target
 			WLOG("You have been BANNED!");
 			disconnect();
 			state = ClientState::Stopped;
 		}
 		else {
-			WLOG("%s has been BANNED!", banned_user.c_str());
+			chat_msg.message = std::string(banned_user + " has been BANNED!");
+			WLOG(chat_msg.message.c_str());
+
+			messages.push_back(chat_msg);
+			new_message = true;
 		}
 	}
 	else if (message_received == ServerMessage::UnBan)
 	{
 		std::string banned_user;
 		packet >> banned_user;
-		WLOG("%s has been UNBANNED!", banned_user.c_str());
+
+		ChatMessage chat_msg;
+		chat_msg.is_system = true;
+
+		chat_msg.message = std::string(banned_user + " has been UNBANNED!");
+		WLOG(chat_msg.message.c_str());
+
+		messages.push_back(chat_msg);
+		new_message = true;
 	}
 	else if (message_received == ServerMessage::BanList)
 	{
