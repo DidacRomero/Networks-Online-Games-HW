@@ -138,13 +138,14 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		{
 			if (connectedSocket.socket == socket)
 			{
-				//If the name is duplicate, disconnect socket and send non welcome packet, then break
+				connectedSocket.playerName = playerName;
+
+				//If the name is duplicate or banned, disconnect socket and send non welcome packet, then break
 				if (refuse_connection == true)
 				{
 					onRefuseConnection(connectedSocket.socket, playerName, refusal_reason);
 					break;
 				}
-				connectedSocket.playerName = playerName;
 
 				// (TODO 1 DC )Send Welcome Packet
 				std::string message = "Welcome to Chad's Cool Chat! You have entered a chat room.";
