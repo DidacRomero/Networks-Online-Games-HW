@@ -113,7 +113,7 @@ bool ModuleNetworkingClient::gui()
 				if (msg.username == playerName) // If this client is the sender
 					ImGui::TextColored(ImVec4(0, 255, 255, 255), "You whispered to %s: %s", msg.whispered_user.c_str(), msg.message.c_str());
 				else
-					ImGui::TextColored(ImVec4(0, 255, 255, 255), "%s whispered to You: %s", msg.whispered_user.c_str(), msg.message.c_str());
+					ImGui::TextColored(ImVec4(0, 255, 255, 255), "%s whispered to You: %s", msg.username.c_str(), msg.message.c_str());
 			}
 			else if (msg.is_system) {	// IF it's a system message
 				ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", msg.message.c_str());
