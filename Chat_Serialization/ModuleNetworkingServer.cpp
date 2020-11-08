@@ -16,6 +16,11 @@ bool ModuleNetworkingServer::start(int port)
 	bindAddr.sin_family = AF_INET;
 	bindAddr.sin_port = htons(port);
 	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY;
+
+	int enable = 1;
+	int iResult;
+	iResult = setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
+	LOG(" SetSockOpt iResult =  %d", iResult);
 	// - Bind the socket to a local interface
 	if (bind(listenSocket, (const struct sockaddr*)&bindAddr, sizeof(bindAddr)) == NO_ERROR)
 		LOG("SUCCESSFULLY binded Server Socket");
