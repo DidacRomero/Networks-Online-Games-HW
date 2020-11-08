@@ -298,15 +298,24 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			if (connectedSocket.playerName == kicked_username)
 			{
 				player_found = true;
-				kick_packet << true;	//Flag to mark operation succesful
-				sendPacket(kick_packet, connectedSocket.socket);
-				onSocketDisconnected(connectedSocket.socket);
 				break;
 			}
 		}
 
-		if (!player_found) {
-			kick_packet << false;
+		kick_packet << player_found;
+		kick_packet << kicked_username;
+
+		if (player_found) {
+			for (auto& connectedSocket : connectedSockets)
+			{
+				//If the socket has the same username, send kick 
+				if (connectedSocket.socket != this->listenSocket)
+				{
+					sendPacket(kick_packet, connectedSocket.socket);
+				}
+			}
+		}
+		else {
 			sendPacket(kick_packet, socket);
 		}
 	}
@@ -509,10 +518,6 @@ bool ModuleNetworkingServer::banRequest(SOCKET socket, const InputMemoryStream& 
 	{
 		// Tell all clients about the ban
 		sendPacket(ban_packet, connectedSocket.socket);
-
-		//If the socket has the same username, send kick 
-		if (connectedSocket.playerName == banned_user)
-			onSocketDisconnected(connectedSocket.socket);
 	}
 
 	return true;

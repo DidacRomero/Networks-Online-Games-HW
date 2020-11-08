@@ -535,10 +535,19 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	{
 		bool kick_success = false;
 		packet >> kick_success;
-
+		
 		if (kick_success) {
-			WLOG("You've been KICKED!");
-			state = ClientState::Stopped;
+			std::string kicked_user;
+			packet >> kicked_user;
+
+			if (kicked_user == playerName) {
+				WLOG("You've been KICKED!");
+				disconnect();
+				state = ClientState::Stopped;
+			}
+			else {
+				WLOG("%s has been KICKED!", kicked_user.c_str());
+			}
 		}
 		else
 			WLOG("The user you tried to kick is not connected or has changed names!");
@@ -551,6 +560,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		if (banned_user == playerName) {	//We check if we are the target
 			WLOG("You have been BANNED!");
+			disconnect();
 			state = ClientState::Stopped;
 		}
 		else {
