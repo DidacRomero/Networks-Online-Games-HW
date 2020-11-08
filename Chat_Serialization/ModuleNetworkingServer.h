@@ -46,12 +46,13 @@ private:
 
 	//Functions for each MESSAGE Case on RECEIVED DATA
 
-	void onUsernameTaken(SOCKET socket, const std::string& username);
+	void onRefuseConnection(SOCKET socket, const std::string& username, std::string& reason);
 
 	bool userIsConnected(std::string &username);
 
 	bool muteRequest(SOCKET socket, const InputMemoryStream& packet, ServerMessage mute_or_unmute);
 
+	bool banRequest(SOCKET socket, const InputMemoryStream& packet, ServerMessage mute_or_unmute);
 
 	//////////////////////////////////////////////////////////////////////
 	// State

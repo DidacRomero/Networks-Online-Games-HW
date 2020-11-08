@@ -163,7 +163,7 @@ bool ModuleNetworkingClient::gui()
 					if (str_message.find("/help") != std::string::npos)
 					{
 						ChatMessage help_msg;
-						help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /logout | /exit | /quit";
+						help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /banlist \n /logout | /exit | /quit";
 						help_msg.is_system = true;
 
 						messages.push_back(help_msg);
@@ -240,12 +240,12 @@ bool ModuleNetworkingClient::gui()
 					else if (str_message.find("/mute ") != std::string::npos)	//Mute a user
 					{
 						str_message.erase(0, 6);	//Eliminate the command /mute
-						muteUser(str_message, true);
+						sendMute(str_message, true);
 					}
 					else if (str_message.find("/unmute ") != std::string::npos)	//Unmute a user
 					{
 						str_message.erase(0, 8);	//Eliminate the command /unmute
-						muteUser(str_message, false);
+						sendMute(str_message, false);
 					}
 					else if (str_message.find("/mutelist") != std::string::npos)
 					{
@@ -270,25 +270,23 @@ bool ModuleNetworkingClient::gui()
 							WLOG("You didn't input any username to kick!");
 						}
 					}
-					//else if (str_message.find("/ban ") != std::string::npos)
-					//{
-					//std::string banned_user;
-					//std::size_t first; std::size_t second;
+					else if (str_message.find("/ban ") != std::string::npos)	//Ban a user
+					{
+						str_message.erase(0, 5);	//Eliminate the command /ban
+						sendBan(str_message, true);
+					}
+					else if (str_message.find("/unban ") != std::string::npos)	//Unban a user
+					{
+						str_message.erase(0, 7);	//Eliminate the command /unban
+						sendBan(str_message, false);
+					}
+					else if (str_message.find("/banlist") != std::string::npos)
+					{
+						OutputMemoryStream packet;
+						packet << ClientMessage::BanList;	// Message type
 
-					////Find the first space "<" and the second space ">" to extract the username between them
-					//first = str_message.find("<");
-					//second = str_message.find(">");
-
-					//int username_len = second - first;
-
-					//banned_user = str_message.substr(first + 1, username_len - 1);
-
-					//OutputMemoryStream packet;
-					//packet << ClientMessage::Kick;
-					//packet << banned_user;
-
-					//sendPacket(packet, socket);
-					//}
+						sendPacket(packet, socket);
+					}
 					else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
 					{
 						state = ClientState::Stopped;
@@ -324,7 +322,10 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (message_received == ServerMessage::NonWelcome)
 	{
-		WLOG("The username %s is already taken, please change your name and try again", playerName.c_str());
+		std::string reason;
+		packet >> reason;
+
+		WLOG(reason.c_str());
 		state = ClientState::Stopped;
 	}
 	else if (message_received == ServerMessage::ChatMessage || message_received == ServerMessage::AnonChatMessage)
@@ -453,10 +454,10 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			else {
 				if (muted_user == playerName) {	//If it's global, we check if we are the target
 					globally_muted = true;	//If we are, we mark ourselves as muted
-					DLOG("You were GLOBALLY MUTED by someone!");
+					DLOG("You have been GLOBALLY MUTED!");
 				}
 				else {
-					DLOG("%s was GLOBALLY MUTED!", muted_user.c_str());
+					DLOG("%s has been GLOBALLY MUTED!", muted_user.c_str());
 				}
 			}
 		}
@@ -488,10 +489,10 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			else {
 				if (muted_user == playerName) {	//If it's global, we check if we are the target
 					globally_muted = false;	//If we are, we mark ourselves as unmuted
-					DLOG("You were GLOBALLY UNMUTED by someone!");
+					DLOG("You have been GLOBALLY UNMUTED!");
 				}
 				else {
-					DLOG("%s was GLOBALLY UNMUTED!", muted_user.c_str());
+					DLOG("%s has been GLOBALLY UNMUTED!", muted_user.c_str());
 				}
 			}
 		}
@@ -528,13 +529,52 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		bool kick_success = false;
 		packet >> kick_success;
 
-		if (kick_success)
+		if (kick_success) {
+			WLOG("You've been KICKED!");
 			state = ClientState::Stopped;
+		}
 		else
 			WLOG("The user you tried to kick is not connected or has changed names!");
 	}
-	// We can use this in the future if the server sends a serverMessage::BANNED or something like this
-	//state = ClientState::Stopped;
+	else if (message_received == ServerMessage::Ban)
+	{
+		std::string banned_user;
+
+		packet >> banned_user;
+
+		if (banned_user == playerName) {	//We check if we are the target
+			WLOG("You have been BANNED!");
+			state = ClientState::Stopped;
+		}
+		else {
+			WLOG("%s has been BANNED!", banned_user.c_str());
+		}
+	}
+	else if (message_received == ServerMessage::UnBan)
+	{
+		std::string banned_user;
+		packet >> banned_user;
+		WLOG("%s has been UNBANNED!", banned_user.c_str());
+	}
+	else if (message_received == ServerMessage::BanList)
+	{
+		ChatMessage ban_list_msg;
+		ban_list_msg.message = " ****** Banned Users ******";
+
+		unsigned int ban_list_size = 0;
+		packet >> ban_list_size;
+
+		for (unsigned int i = 0; i < ban_list_size; ++i) {
+			std::string muted_user;
+			packet >> muted_user;
+			ban_list_msg.message.append("\n - " + muted_user);
+		}
+
+		ban_list_msg.is_system = true;
+
+		messages.push_back(ban_list_msg);
+		new_message = true;
+	}
 }
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
@@ -576,8 +616,7 @@ void ModuleNetworkingClient::sendChatMessage(std::string& message, bool isWhispe
 	}
 }
 
-// Send a message to other users
-void ModuleNetworkingClient::muteUser(std::string& message, bool muting)
+void ModuleNetworkingClient::sendMute(std::string& message, bool muting)
 {
 	std::string mute_mode;
 	std::size_t mode_end;
@@ -626,3 +665,21 @@ void ModuleNetworkingClient::sendKick(std::string& username)
 	sendPacket(packet, socket);
 }
 
+void ModuleNetworkingClient::sendBan(std::string& message, bool banning)
+{
+	if (banning && message == playerName) {
+		WLOG("Banning yourself is not very smart, is it?");
+	}
+	else {
+		OutputMemoryStream packet;
+
+		if (banning)
+			packet << ClientMessage::Ban;
+		else
+			packet << ClientMessage::UnBan;
+
+		packet << message;		// Mute User Target
+
+		sendPacket(packet, socket);
+	}
+}

@@ -117,19 +117,31 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string playerName;
 		packet >> playerName;
 
-		bool is_name_duplicate = false;
+		bool refuse_connection = false;
+		std::string refusal_reason;
+
+		// Check for a repeated name
 		for (auto& connectedSocket : connectedSockets)
-			if (connectedSocket.playerName == playerName)
-				is_name_duplicate = true;
+			if (connectedSocket.playerName == playerName) {
+				refusal_reason = "Your username is already taken, please change it and retry connection to the server to access the chat.";
+				refuse_connection = true;
+			}
+
+		// Check for a user ban
+		for (std::string& user_ban : banned_users)
+			if (user_ban == playerName) {
+				refusal_reason = "You have been banned from this chat. Ask another user to unban you.";
+				refuse_connection = true;
+			}
 
 		for (auto& connectedSocket : connectedSockets)
 		{
 			if (connectedSocket.socket == socket)
 			{
 				//If the name is duplicate, disconnect socket and send non welcome packet, then break
-				if (is_name_duplicate == true)
+				if (refuse_connection == true)
 				{
-					onUsernameTaken(connectedSocket.socket, playerName);
+					onRefuseConnection(connectedSocket.socket, playerName, refusal_reason);
 					break;
 				}
 				connectedSocket.playerName = playerName;
@@ -310,6 +322,27 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		sendPacket(mutelist_packet, socket);
 	}
+	else if (clientMessage == ClientMessage::Ban)
+	{
+		banRequest(socket, packet, ServerMessage::Ban);
+	}
+	else if (clientMessage == ClientMessage::UnBan)
+	{
+		banRequest(socket, packet, ServerMessage::UnBan);
+	}
+	else if (clientMessage == ClientMessage::BanList)
+	{
+		OutputMemoryStream banlist_packet;
+		banlist_packet << ServerMessage::BanList;
+		banlist_packet << (unsigned int)banned_users.size();
+
+		for (std::string& m_user : banned_users)	// Serialize all user names
+		{
+			banlist_packet << m_user;
+		}
+
+		sendPacket(banlist_packet, socket);
+	}
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
@@ -343,19 +376,17 @@ void ModuleNetworkingServer::userJoinedOrLeft(std::string& username, UserConnect
 	}
 }
 
-void ModuleNetworkingServer::onUsernameTaken(SOCKET socket, const std::string &username)
+void ModuleNetworkingServer::onRefuseConnection(SOCKET socket, const std::string &username, std::string& reason)
 {
-	std::string message = "Your username is already taken, please change it and retry connection to the server to access the chat.";
 	OutputMemoryStream packet;
 	ServerMessage msg_type = ServerMessage::NonWelcome;
 
 	packet << msg_type;
-	packet << message;
+	packet << reason;
 
 	sendPacket(packet, socket);
 
-	LOG("Socket %d  with username %s disconnected! Forced disconnection due to duplicity of usernames.", socket, username.c_str());
-	
+	LOG("Socket %d with username %s is forced to disconnect! Banned or duplicated username!", socket, username.c_str());
 
 	//Disconnect the socket
 	onSocketDisconnected(socket);
@@ -441,6 +472,42 @@ bool ModuleNetworkingServer::muteRequest(SOCKET socket, const InputMemoryStream&
 	if (!user_found) {
 		mute_packet << false;	// Flag that user was not found, return to sender AND ONLY SENDER
 		sendPacket(mute_packet, socket);
+	}
+
+	return true;
+}
+
+bool ModuleNetworkingServer::banRequest(SOCKET socket, const InputMemoryStream& packet, ServerMessage ban_or_unban)	//NOTE: A ban done by name is not great, but we'll keep it simple
+{
+	std::string banned_user;
+	packet >> banned_user;
+
+	OutputMemoryStream ban_packet;
+	ban_packet << ban_or_unban;	// Mark ban purpose, if ban or unban
+	ban_packet << banned_user;	// Mark ban target
+
+	bool banned_user_registered = false;
+
+	for (std::vector<std::string>::iterator it = banned_users.begin(); it != banned_users.end(); ++it) {
+		if ((*it) == banned_user) {
+
+			banned_user_registered = true;	// Flag that the user is inside the server ban list
+
+			if (ban_or_unban == ServerMessage::UnBan)	// Remove from list if the order is to UNBAN
+				banned_users.erase(it);
+
+			break;
+		}
+	}
+
+	if (ban_or_unban == ServerMessage::Ban && !banned_user_registered) {	// If the order is to BAN and he's not on the list, add it
+		banned_users.push_back(banned_user);
+	}
+
+	for (auto& connectedSocket : connectedSockets)	//NOTE: Because a BAN can be done to an "offline user", we don't care if the user isn't connected, but if he is he will be KICKED as well
+	{
+		// Tell all clients about the ban
+		sendPacket(ban_packet, connectedSocket.socket);
 	}
 
 	return true;

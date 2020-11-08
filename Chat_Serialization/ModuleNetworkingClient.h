@@ -53,10 +53,11 @@ private:
 
 	void sendChatMessage(std::string& message, bool isWhisper = false, std::string dest_username = "");
 
+	void sendMute(std::string& username, bool muting);
+
 	void sendKick(std::string &username);
 
-	void muteUser(std::string& username, bool muting);
-
+	void sendBan(std::string& username, bool banning);
 
 	//////////////////////////////////////////////////////////////////////
 	// Client state

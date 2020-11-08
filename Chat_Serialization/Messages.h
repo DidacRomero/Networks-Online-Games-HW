@@ -14,6 +14,9 @@ enum class ClientMessage
 	UnMute,
 	MuteList,
 	Kick,
+	Ban,
+	UnBan,
+	BanList,
 	List
 };
 
@@ -30,6 +33,9 @@ enum class ServerMessage
 	UnMute,
 	MuteList,
 	Kick,
+	Ban,
+	UnBan,
+	BanList,
 	List
 };
 
