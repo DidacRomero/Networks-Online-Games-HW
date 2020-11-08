@@ -123,14 +123,14 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		// Check for a repeated name
 		for (auto& connectedSocket : connectedSockets)
 			if (connectedSocket.playerName == playerName) {
-				refusal_reason = "Your username is already taken, please change it and retry connection to the server to access the chat.";
+				refusal_reason = "Username already taken by another user";
 				refuse_connection = true;
 			}
 
 		// Check for a user ban
 		for (std::string& user_ban : banned_users)
 			if (user_ban == playerName) {
-				refusal_reason = "You have been banned from this chat. Ask another user to unban you.";
+				refusal_reason = "Banned from the server";
 				refuse_connection = true;
 			}
 
@@ -371,12 +371,15 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 	}
 }
 
-void ModuleNetworkingServer::userJoinedOrLeft(std::string& username, UserConnection connection_state)
+void ModuleNetworkingServer::userJoinedOrLeft(std::string& username, UserConnection connection_state, std::string abort_reason)
 {
 	OutputMemoryStream packet;
 	packet << ServerMessage::UserEvent;
 	packet << connection_state;
 	packet << username;
+
+	if (connection_state == UserConnection::Aborted)
+		packet << abort_reason;
 
 	for (auto& connectedSocket : connectedSockets)
 	{
@@ -398,8 +401,18 @@ void ModuleNetworkingServer::onRefuseConnection(SOCKET socket, const std::string
 
 	LOG("Socket %d with username %s is forced to disconnect! Banned or duplicated username!", socket, username.c_str());
 
-	//Disconnect the socket
-	onSocketDisconnected(socket);
+	// Custom "onSocketDisconnected" for the same function but to send an "failed attempted connection" message to other clients (We decided to do it this way to not mess with the function's override)
+	for (auto it = connectedSockets.begin(); it != connectedSockets.end(); ++it)
+	{
+		auto& connectedSocket = *it;
+		if (connectedSocket.socket == socket)
+		{
+			//Now lets tell everyone a user left the chat
+			userJoinedOrLeft(connectedSocket.playerName, UserConnection::Aborted, reason);
+			connectedSockets.erase(it);
+			break;
+		}
+	}
 
 	for (std::vector<SOCKET>::iterator it = sockets.begin(); it != sockets.end(); it++)
 	{

@@ -42,7 +42,7 @@ private:
 	//////////////////////////////////////////////////////////////////////
 
 	// User joined on true, user left on false
-	void userJoinedOrLeft(std::string &username, UserConnection connection_state);
+	void userJoinedOrLeft(std::string &username, UserConnection connection_state, std::string abort_reason = "");
 
 	//Functions for each MESSAGE Case on RECEIVED DATA
 

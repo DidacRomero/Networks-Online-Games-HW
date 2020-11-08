@@ -42,6 +42,7 @@ enum class ServerMessage
 enum class UserConnection
 {
 	Left,
-	Joined
+	Joined,
+	Aborted
 };
 

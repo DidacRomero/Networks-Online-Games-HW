@@ -332,7 +332,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string reason;
 		packet >> reason;
 
-		WLOG(reason.c_str());
+		WLOG("You were automatically kicked from the server. Reason: %s.", reason.c_str());
 		state = ClientState::Stopped;
 	}
 	else if (message_received == ServerMessage::ChatMessage || message_received == ServerMessage::AnonChatMessage)
@@ -422,9 +422,14 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		packet >> username;
 
 		if(connection_state == UserConnection::Joined)
-		DLOG("User %s joined the chat.", username.c_str());
+			DLOG("User %s joined the chat.", username.c_str());
 		else if (connection_state == UserConnection::Left)
-		DLOG("User %s left the chat.", username.c_str());
+			DLOG("User %s left the chat.", username.c_str());
+		else if (connection_state == UserConnection::Aborted) {
+			std::string abort_reason;
+			packet >> abort_reason;
+			DLOG("User %s tried to join the chat, but was automatically kicked. Reason: %s.", username.c_str(), abort_reason.c_str());
+		}
 	}
 	else if (message_received == ServerMessage::List)
 	{
