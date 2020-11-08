@@ -87,6 +87,12 @@ bool ModuleNetworkingClient::gui()
 		ImGui::Image(tex->shaderResource, texSize);
 
 		ImGui::Text("Hello %s, welcome to the Chat!", playerName.c_str());
+		ImGui::SameLine();
+		if (ImGui::Button("Logout")) {
+			disconnect();
+			state = ClientState::Stopped;
+		}
+
 		ImGui::Spacing();
 
 		// ORIGINAL
@@ -289,6 +295,7 @@ bool ModuleNetworkingClient::gui()
 					}
 					else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
 					{
+						disconnect();
 						state = ClientState::Stopped;
 					}
 				}

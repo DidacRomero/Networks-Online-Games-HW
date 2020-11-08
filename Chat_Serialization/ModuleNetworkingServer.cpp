@@ -508,6 +508,10 @@ bool ModuleNetworkingServer::banRequest(SOCKET socket, const InputMemoryStream& 
 	{
 		// Tell all clients about the ban
 		sendPacket(ban_packet, connectedSocket.socket);
+
+		//If the socket has the same username, send kick 
+		if (connectedSocket.playerName == banned_user)
+			onSocketDisconnected(connectedSocket.socket);
 	}
 
 	return true;
