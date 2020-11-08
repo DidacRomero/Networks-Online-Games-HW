@@ -1,5 +1,6 @@
 #include "ModuleNetworkingClient.h"
 
+// By Dídac Romero & Carles Homs
 
 bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPort, const char *pplayerName)
 {

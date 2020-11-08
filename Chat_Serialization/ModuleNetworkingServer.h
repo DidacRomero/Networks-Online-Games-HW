@@ -2,6 +2,8 @@
 
 #include "ModuleNetworking.h"
 
+// By Dídac Romero & Carles Homs
+
 class ModuleNetworkingServer : public ModuleNetworking
 {
 public:

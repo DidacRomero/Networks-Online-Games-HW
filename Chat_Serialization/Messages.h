@@ -3,6 +3,8 @@
 // Add as many messages as you need depending on the
 // functionalities that you decide to implement.
 
+// By Dídac Romero & Carles Homs
+
 enum class ClientMessage
 {
 	Hello,
