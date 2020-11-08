@@ -169,7 +169,7 @@ bool ModuleNetworkingClient::gui()
 					if (str_message.find("/help") != std::string::npos)
 					{
 						ChatMessage help_msg;
-						help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /banlist \n /logout | /exit | /quit";
+						help_msg.message = " ****** Commands List ******\n /help\n /list\n /changename <newname>\n /anonymous <message>\n /whisper <username> <message>\n /(un)mute <local/global> <username> \n /mutelist \n /kick <username>\n /(un)ban <username> \n /banlist \n /clear \n /logout | /exit | /quit";
 						help_msg.is_system = true;
 
 						messages.push_back(help_msg);
@@ -293,6 +293,10 @@ bool ModuleNetworkingClient::gui()
 
 						sendPacket(packet, socket);
 					}
+					else if (str_message.find("/clear") != std::string::npos)
+					{
+						messages.clear();
+					}
 					else if (str_message.find("/logout") != std::string::npos || str_message.find("/exit") != std::string::npos || str_message.find("/quit") != std::string::npos)
 					{
 						disconnect();
@@ -381,12 +385,25 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 			packet >> chat_message.username;
 			packet >> chat_message.whispered_user;
 
-			//Add the public message to our messages list
-			messages.push_back(chat_message);
-			new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+			bool muted_user = false;
+			for (std::string user : local_mutes) {	// Check if user is muted locally
+				if (user == chat_message.username) {
+					muted_user = true;
+					break;
+				}
+			}
 
-			//LOG to test
-			DLOG("Test Log:   %s  whispered %s: %s", chat_message.username.c_str(), chat_message.whispered_user.c_str(), chat_message.message.c_str());
+			if (!muted_user) {
+				//Add the public message to our messages list
+				messages.push_back(chat_message);
+				new_message = true;	// Mark that a new message has been recieved! We will autoscroll down if we were
+
+				//LOG to test
+				DLOG("%s whispered to You: %s", chat_message.username.c_str(), chat_message.message.c_str());
+			}
+			else {
+				WLOG("%s tried whispering to You, but you locally MUTED him. Message: %s", chat_message.username.c_str(), chat_message.message.c_str());
+			}
 		}
 		else {
 			WLOG("Whispered user is not connected!");
