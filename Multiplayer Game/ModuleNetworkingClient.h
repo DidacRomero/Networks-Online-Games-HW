@@ -84,9 +84,9 @@ private:
 	// Virtual connection
 	//////////////////////////////////////////////////////////////////////
 
-	// TODO(you): UDP virtual connection lab session
-
-
+	// TODO(you): UDP virtual connection lab session	(DONE)
+	float secSinceLastPacket = 0.0f;
+	float secSinceLastPing = 0.0f;
 
 	//////////////////////////////////////////////////////////////////////
 	// Replication

@@ -102,7 +102,8 @@ void ModuleNetworkingClient::onGui()
 
 void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, const sockaddr_in &fromAddress)
 {
-	// TODO(you): UDP virtual connection lab session
+	// TODO(you): UDP virtual connection lab session	(DONE)
+	secSinceLastPacket = 0.0f;
 
 	uint32 protoId;
 	packet >> protoId;
@@ -129,6 +130,10 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	}
 	else if (state == ClientState::Connected)
 	{
+		// @ch0m5 Custom Code
+		if (message == ServerMessage::Ping)
+			LOG("Ping received from server!");	//IMPROVE: Add ms between Ping sent and Ping received?
+
 		// TODO(you): World state replication lab session
 
 		// TODO(you): Reliability on top of UDP lab session
@@ -139,9 +144,14 @@ void ModuleNetworkingClient::onUpdate()
 {
 	if (state == ClientState::Stopped) return;
 
+	// TODO(you): UDP virtual connection lab session	(DONE)
+	secSinceLastPacket += Time.deltaTime;
 
-	// TODO(you): UDP virtual connection lab session
-
+	if (secSinceLastPacket > DISCONNECT_TIMEOUT_SECONDS)
+	{
+		LOG("Disconnected from server! Reason: High ping.");
+		onDisconnect();
+	}
 
 	if (state == ClientState::Connecting)
 	{
@@ -162,7 +172,20 @@ void ModuleNetworkingClient::onUpdate()
 	}
 	else if (state == ClientState::Connected)
 	{
-		// TODO(you): UDP virtual connection lab session
+		// TODO(you): UDP virtual connection lab session	(DONE)
+		secSinceLastPing += Time.deltaTime;
+
+		if (secSinceLastPing > PING_INTERVAL_SECONDS)
+		{
+			secSinceLastPing = 0.0f;
+
+			OutputMemoryStream packet;
+			packet << PROTOCOL_ID;
+			packet << ClientMessage::Ping;
+			sendPacket(packet, serverAddress);
+
+			LOG("Ping sent to server!");
+		}
 
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))

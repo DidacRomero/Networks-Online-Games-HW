@@ -186,9 +186,12 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					}
 				}
 			}
+		}	// TODO(you): UDP virtual connection lab session	(DONE)
+		else if (message == ClientMessage::Ping)
+		{
+			proxy->secSinceLastPacket = 0.0f;
+			LOG("Recived Ping from <%s>!", proxy->name.c_str());
 		}
-
-		// TODO(you): UDP virtual connection lab session
 	}
 }
 
@@ -214,7 +217,29 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
-				// TODO(you): UDP virtual connection lab session
+				// TODO(you): UDP virtual connection lab session	(DONE)
+				clientProxy.secSinceLastPacket += Time.deltaTime;
+
+				if (clientProxy.secSinceLastPacket > DISCONNECT_TIMEOUT_SECONDS)
+				{
+					LOG("Client <%s> disconnected. Reason: High ping.", clientProxy.name.c_str());
+					destroyClientProxy(&clientProxy);
+					continue;
+				}
+
+				clientProxy.secSinceLastPing += Time.deltaTime;
+
+				if (clientProxy.secSinceLastPing > PING_INTERVAL_SECONDS)
+				{
+					clientProxy.secSinceLastPing = 0.0f;
+
+					OutputMemoryStream pingPacket;
+					pingPacket << PROTOCOL_ID;
+					pingPacket << ServerMessage::Ping;
+					sendPacket(pingPacket, clientProxy.address);
+
+					LOG("Sending Ping to client <%s>.", clientProxy.name.c_str());
+				}
 
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
