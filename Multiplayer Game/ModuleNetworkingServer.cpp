@@ -256,7 +256,11 @@ void ModuleNetworkingServer::onUpdate()
 				{
 					//We Write a packet with our commands for other players
 					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
 					clientProxy.manager_server.write(packet);
+
+					//Send the packet
+					sendPacket(packet,clientProxy.address);
 				}
 
 				// TODO(you): Reliability on top of UDP lab session

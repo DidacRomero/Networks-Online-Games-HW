@@ -135,6 +135,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			LOG("Ping received from server!");	//IMPROVE: Add ms between Ping sent and Ping received?
 
 		// TODO(you): World state replication lab session
+		//If we have to replicate read!
+		if (message == ServerMessage::Replication)
+		{
+			manager_client.read(packet);
+		}
 
 		// TODO(you): Reliability on top of UDP lab session
 	}
