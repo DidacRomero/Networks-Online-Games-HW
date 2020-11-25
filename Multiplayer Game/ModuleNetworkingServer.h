@@ -55,6 +55,7 @@ private:
 		float secSinceLastPing = 0.0f;
 
 		// TODO(you): World state replication lab session
+		ReplicationManagerServer manager_server;
 		// TODO(you): Reliability on top of UDP lab session
 
 		uint32 nextExpectedInputSequenceNumber = 0;
@@ -127,6 +128,9 @@ private:
 	// TODO(you): UDP virtual connection lab session	(DONE)
 	float secSinceLastPacket = 0.0f;
 	float secSinceLastPing = 0.0f;
+
+	float secToNextPacket = 0.0f;
+	uint16 packetsPerSecond = 10;
 
 };
 

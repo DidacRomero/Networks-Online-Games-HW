@@ -145,7 +145,9 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				{
 					GameObject *gameObject = networkGameObjects[i];
 					
-					// TODO(you): World state replication lab session
+					// TODO(you): World state replication lab session (DONE)
+					//Send each gameObject with the create action since the player just joined
+					proxy->manager_server.create(gameObject->networkId);
 				}
 
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
@@ -248,6 +250,14 @@ void ModuleNetworkingServer::onUpdate()
 				}
 
 				// TODO(you): World state replication lab session
+				// Write replication packet every 100 ms (10 packets per second)
+				secToNextPacket += Time.deltaTime;
+				if (secToNextPacket >= (float)(1.0f / packetsPerSecond))
+				{
+					//We Write a packet with our commands for other players
+					OutputMemoryStream packet;
+					clientProxy.manager_server.write(packet);
+				}
 
 				// TODO(you): Reliability on top of UDP lab session
 			}
@@ -389,7 +399,8 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(you): World state replication lab session		(DONE)
+			clientProxies[i].manager_server.create(gameObject->networkId);
 		}
 	}
 
@@ -398,12 +409,13 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 
 void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 {
-	// Notify all client proxies' replication manager to destroy the object remotely
+	// Notify all client proxies' replication manager to update the object remotely
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(you): World state replication lab session		(DONE)
+			clientProxies[i].manager_server.update(gameObject->networkId);
 		}
 	}
 }
@@ -415,7 +427,8 @@ void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(you): World state replication lab session		(DONE)
+			clientProxies[i].manager_server.destroy(gameObject->networkId);
 		}
 	}
 

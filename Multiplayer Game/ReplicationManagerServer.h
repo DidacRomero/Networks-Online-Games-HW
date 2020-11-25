@@ -3,21 +3,6 @@
 #include <unordered_map>
 // TODO(you): World state replication lab session
 
-enum class ReplicateAction
-{
-	NONE = 0,
-	CREATE,
-	UPDATE,
-	DESTROY
-};
-
-struct ReplicationCommand
-{
-	ReplicateAction action;
-	uint32 networkId;
-};
-
-
 class ReplicationManagerServer
 {
 
