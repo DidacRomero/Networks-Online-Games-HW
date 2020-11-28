@@ -1,5 +1,6 @@
 #include "Networks.h"
 #include "ReplicationManagerServer.h"
+#include "Maths.h"
 
 // TODO(you): World state replication lab session
 //All code here written by us Carles & Dídac
@@ -42,6 +43,18 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			packet << go->position.x;
 			packet << go->position.y;
 			packet << go->angle;
+
+			packet << go->behaviour->type();
+			packet << go->tag;
+
+			//Send type Collider data
+			/*packet << go->collider->isTrigger;
+			packet << go->collider->type;*/
+			
+
+
+			//Pass sprite, colliders & other data necessary for creation
+			writeSprite(packet,go);
 		}
 		else if ((*it).second.action == ReplicateAction::UPDATE)	//It may seem code duplication for now, but in the future we might have to different things on update, sending different info
 		{
@@ -59,4 +72,22 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 	}
 	//Clear remove the application command
 	umap.clear();
+}
+
+void ReplicationManagerServer::writeSprite(OutputMemoryStream& packet, GameObject* go)
+{
+	if (go->behaviour->type() == BehaviourType::Spaceship)
+	{
+		packet << SpriteType::Spacecraft1;
+	}
+	else if (go->behaviour->type() == BehaviourType::Laser)
+	{
+		packet << SpriteType::Laser;
+
+	}
+}
+
+void ReplicationManagerServer::writeAnimation(OutputMemoryStream& packet, GameObject* go)
+{
+	//packet << go->animation->clip
 }

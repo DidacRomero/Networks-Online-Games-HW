@@ -14,6 +14,10 @@ public:	//METHODS
 
 	void write(OutputMemoryStream &packet);
 
+	void writeSprite(OutputMemoryStream& packet, GameObject* go);
+	void writeAnimation(OutputMemoryStream& packet, GameObject* go);
+
+
 private:	//VARS
 	std::unordered_map <uint32, ReplicationCommand> umap;
 };

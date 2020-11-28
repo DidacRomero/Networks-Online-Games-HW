@@ -1,4 +1,5 @@
 #include "Networks.h"
+#include "ReplicationManagerClient.h"
 
 // TODO(you): World state replication lab session
 
@@ -27,19 +28,36 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				GameObject* go = App->modGameObject->Instantiate();
 				go->networkId = networkId;
 				App->modLinkingContext->registerNetworkGameObject(go);
+
+				//Now we need to fill ALL the data of the gameObject, position, behaviour, sprite etc.
 				packet >> go->position.x;
 				packet >> go->position.y;
 				packet >> go->angle;
+				go->size = { 100,100 }; //HARDCODE REMOVE DIDAC
+
+				BehaviourType behaviour;
+				packet >> behaviour;
+				packet >> go->tag;
+
+
+				//Receive sprite data
+				SpriteType s_type;
+				packet >> s_type;
+				readSprite(s_type,go);
 
 				packet_bytes += sizeof(go->position.x);
 				packet_bytes += sizeof(go->position.y);
 				packet_bytes += sizeof(go->angle);
+				packet_bytes += sizeof(behaviour);
+				packet_bytes += sizeof(go->tag);
+				packet_bytes += sizeof(s_type);
 			}
 			else if (action == ReplicateAction::UPDATE)
 			{
 				//If Update, get object from linking, deserialize
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 
+				//Check for Nulls & possibility of receiving an Uodate before a Create!!!!!!!
 				packet >> go->position.x;
 				packet >> go->position.y;
 				packet >> go->angle;
@@ -57,4 +75,24 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			}
 		}
 	}
+}
+
+void ReplicationManagerClient::readSprite(SpriteType s_type, GameObject* go)
+{
+	// Create sprite
+	go->sprite = App->modRender->addSprite(go);
+	go->sprite->order = 5;
+	//First test with 1 texture
+	go->sprite->texture = App->modResources->spacecraft1;
+
+	//Later on, take into account type of spaceship
+	/*if (spaceshipType == 0) {
+		go->sprite->texture = App->modResources->spacecraft1;
+	}
+	else if (spaceshipType == 1) {
+		go->sprite->texture = App->modResources->spacecraft2;
+	}
+	else {
+		go->sprite->texture = App->modResources->spacecraft3;
+	}*/
 }

@@ -4,6 +4,25 @@
 
 struct Texture;
 
+enum class SpriteType
+{
+	Background = 1,
+	Space,
+	Asteroid1,
+	Asteroid2,
+	Spacecraft1,
+	Spacecraft2,
+	Spacecraft3,
+	Laser,
+	Explosion1
+};
+
+enum class AudioClipType
+{
+	Laser = 0,
+	Explosion
+};
+
 class ModuleResources : public Module
 {
 public:
