@@ -37,6 +37,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 
 				BehaviourType behaviour;
 				packet >> behaviour;
+				createBehaviour(behaviour,go);
 				packet >> go->tag;
 
 
@@ -57,10 +58,13 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				//If Update, get object from linking, deserialize
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 
-				//Check for Nulls & possibility of receiving an Uodate before a Create!!!!!!!
-				packet >> go->position.x;
-				packet >> go->position.y;
-				packet >> go->angle;
+				//Check for Nulls & possibility of receiving an Update before a Create!!!!!!!
+				if (go != nullptr)
+				{
+					packet >> go->position.x;
+					packet >> go->position.y;
+					packet >> go->angle;
+				}
 
 				packet_bytes += sizeof(go->position.x);
 				packet_bytes += sizeof(go->position.y);
@@ -96,3 +100,20 @@ void ReplicationManagerClient::readSprite(SpriteType s_type, GameObject* go)
 		go->sprite->texture = App->modResources->spacecraft3;
 	}*/
 }
+
+void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObject* go)
+{
+	Behaviour* b = App->modBehaviour->addBehaviour(behaviour, go);
+	if (behaviour == BehaviourType::Spaceship)
+	{
+		go->behaviour = (Spaceship*)b;
+		go->behaviour->isServer = true;
+	}
+	else if (behaviour == BehaviourType::Laser)
+	{
+		go->behaviour = (Laser*)b;
+		go->behaviour->isServer = false;
+	}
+}
+
+
