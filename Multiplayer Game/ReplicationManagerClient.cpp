@@ -33,25 +33,27 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				packet >> go->position.x;
 				packet >> go->position.y;
 				packet >> go->angle;
-				go->size = { 100,100 }; //HARDCODE REMOVE DIDAC
+				packet_bytes += sizeof(go->position.x);
+				packet_bytes += sizeof(go->position.y);
+				packet_bytes += sizeof(go->angle);
 
 				BehaviourType behaviour;
 				packet >> behaviour;
 				createBehaviour(behaviour,go);
+				packet_bytes += sizeof(behaviour);
 				packet >> go->tag;
-
+				packet_bytes += sizeof(go->tag);
 
 				//Receive sprite data
-				SpriteType s_type;
-				packet >> s_type;
-				readSprite(s_type,go);
+				std::string sprite_filename;
+				packet >> sprite_filename;
+				readSprite(sprite_filename,go);
+				if(go->sprite !=nullptr)
+				packet >> go->sprite->order;	//We need to assign the sprite order after creating the sprite
 
-				packet_bytes += sizeof(go->position.x);
-				packet_bytes += sizeof(go->position.y);
-				packet_bytes += sizeof(go->angle);
-				packet_bytes += sizeof(behaviour);
-				packet_bytes += sizeof(go->tag);
-				packet_bytes += sizeof(s_type);
+				packet_bytes += sizeof(sprite_filename);
+				packet_bytes += sizeof(go->sprite->order);
+
 			}
 			else if (action == ReplicateAction::UPDATE)
 			{
@@ -81,24 +83,25 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 	}
 }
 
-void ReplicationManagerClient::readSprite(SpriteType s_type, GameObject* go)
+void ReplicationManagerClient::readSprite(const std::string& filename, GameObject* go)
 {
 	// Create sprite
 	go->sprite = App->modRender->addSprite(go);
-	go->sprite->order = 5;
-	//First test with 1 texture
-	go->sprite->texture = App->modResources->spacecraft1;
-
-	//Later on, take into account type of spaceship
-	/*if (spaceshipType == 0) {
+	//determine the texture
+	if (strcmp(filename.c_str(), App->modResources->asteroid1->filename) == 0)	//ASTEROID 1
+		go->sprite->texture = App->modResources->asteroid1;
+	else if (strcmp(filename.c_str(), App->modResources->asteroid2->filename) == 0) //ASTEROID 2
+		go->sprite->texture = App->modResources->asteroid2;
+	else if (strcmp(filename.c_str(), App->modResources->spacecraft1->filename) == 0) //SPACECRAFT 1
 		go->sprite->texture = App->modResources->spacecraft1;
-	}
-	else if (spaceshipType == 1) {
+	else if (strcmp(filename.c_str(), App->modResources->spacecraft2->filename) == 0) //SPACECRAFT 2
 		go->sprite->texture = App->modResources->spacecraft2;
-	}
-	else {
+	else if (strcmp(filename.c_str(), App->modResources->spacecraft3->filename) == 0) //SPACECRAFT 3
 		go->sprite->texture = App->modResources->spacecraft3;
-	}*/
+	else if (strcmp(filename.c_str(), App->modResources->laser->filename) == 0) //LASER
+		go->sprite->texture = App->modResources->laser;
+	else if (strcmp(filename.c_str(), App->modResources->explosion1->filename) == 0) //EXPLOSION 1
+		go->sprite->texture = App->modResources->explosion1;
 }
 
 void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObject* go)
@@ -108,11 +111,13 @@ void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObje
 	{
 		go->behaviour = (Spaceship*)b;
 		go->behaviour->isServer = true;
+		go->size = { 100,100 };
 	}
 	else if (behaviour == BehaviourType::Laser)
 	{
 		go->behaviour = (Laser*)b;
 		go->behaviour->isServer = false;
+		go->size = { 20,60 };
 	}
 }
 

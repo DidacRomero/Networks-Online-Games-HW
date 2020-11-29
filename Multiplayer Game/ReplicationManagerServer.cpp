@@ -47,14 +47,11 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			packet << go->behaviour->type();
 			packet << go->tag;
 
+			//Pass sprite, colliders & other data necessary for creation
+			writeSprite(packet, go);
 			//Send type Collider data
 			/*packet << go->collider->isTrigger;
 			packet << go->collider->type;*/
-			
-
-
-			//Pass sprite, colliders & other data necessary for creation
-			writeSprite(packet,go);
 		}
 		else if ((*it).second.action == ReplicateAction::UPDATE)	//It may seem code duplication for now, but in the future we might have to different things on update, sending different info
 		{
@@ -76,15 +73,10 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 void ReplicationManagerServer::writeSprite(OutputMemoryStream& packet, GameObject* go)
 {
-	if (go->behaviour->type() == BehaviourType::Spaceship)
-	{
-		packet << SpriteType::Spacecraft1;
-	}
-	else if (go->behaviour->type() == BehaviourType::Laser)
-	{
-		packet << SpriteType::Laser;
-
-	}
+	//Give us the filename
+	std::string str = go->sprite->texture->filename;
+	packet << str;
+	packet << go->sprite->order;
 }
 
 void ReplicationManagerServer::writeAnimation(OutputMemoryStream& packet, GameObject* go)
