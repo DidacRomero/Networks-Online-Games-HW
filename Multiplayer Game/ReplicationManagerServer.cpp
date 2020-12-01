@@ -44,22 +44,28 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			packet << go->position.y;
 			packet << go->angle;
 
-			packet << go->behaviour->type();
-			packet << go->tag;
-
 			//Pass sprite, colliders & other data necessary for creation
 			writeSprite(packet, go);
-			//Send type Collider data
-			/*packet << go->collider->isTrigger;
-			packet << go->collider->type;*/
+
+			//Pass behaviour info
+			if(go->behaviour != nullptr)
+			packet << go->behaviour->type();
+			else
+			packet << BehaviourType::None;
+
+			//Pass collider info
+			packet << go->tag;
 		}
 		else if ((*it).second.action == ReplicateAction::UPDATE)	//It may seem code duplication for now, but in the future we might have to different things on update, sending different info
 		{
 			//If action Update
 			GameObject* go = App->modLinkingContext->getNetworkGameObject((*it).second.networkId);
-			packet << go->position.x;
-			packet << go->position.y;
-			packet << go->angle;
+			if (go != nullptr)
+			{
+				packet << go->position.x;
+				packet << go->position.y;
+				packet << go->angle;
+			}
 		}
 		else if ((*it).second.action == ReplicateAction::DESTROY)
 		{

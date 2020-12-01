@@ -37,13 +37,6 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				packet_bytes += sizeof(go->position.y);
 				packet_bytes += sizeof(go->angle);
 
-				BehaviourType behaviour;
-				packet >> behaviour;
-				createBehaviour(behaviour,go);
-				packet_bytes += sizeof(behaviour);
-				packet >> go->tag;
-				packet_bytes += sizeof(go->tag);
-
 				//Receive sprite data
 				std::string sprite_filename;
 				packet >> sprite_filename;
@@ -53,6 +46,14 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 
 				packet_bytes += sizeof(sprite_filename);
 				packet_bytes += sizeof(go->sprite->order);
+
+				//receive behaviour and collider info
+				BehaviourType behaviour;
+				packet >> behaviour;
+				createBehaviour(behaviour, go);
+				packet_bytes += sizeof(behaviour);
+				packet >> go->tag;
+				packet_bytes += sizeof(go->tag);
 
 			}
 			else if (action == ReplicateAction::UPDATE)
@@ -76,8 +77,11 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			{
 				//If destroy, get go from linking context, unregister & destroy
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
-				App->modLinkingContext->unregisterNetworkGameObject(go);
-				App->modGameObject->Destroy(go);
+				if (go != nullptr)
+				{
+					App->modLinkingContext->unregisterNetworkGameObject(go);
+					App->modGameObject->Destroy(go);
+				}
 			}
 		}
 	}
@@ -104,21 +108,28 @@ void ReplicationManagerClient::readSprite(const std::string& filename, GameObjec
 		go->sprite->texture = App->modResources->explosion1;
 }
 
+//This Function assigns the correct behaviour
 void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObject* go)
 {
 	Behaviour* b = App->modBehaviour->addBehaviour(behaviour, go);
 	if (behaviour == BehaviourType::Spaceship)
 	{
 		go->behaviour = (Spaceship*)b;
-		go->behaviour->isServer = true;
+		go->behaviour->isServer = false;
 		go->size = { 100,100 };
+		go->collider = App->modCollision->addCollider(ColliderType::Player, go);
+		//go->collider->isTrigger = false;
 	}
 	else if (behaviour == BehaviourType::Laser)
 	{
 		go->behaviour = (Laser*)b;
 		go->behaviour->isServer = false;
 		go->size = { 20,60 };
+		go->collider = App->modCollision->addCollider(ColliderType::Laser, go);
+		//go->collider->isTrigger = true;
 	}
+
+
 }
 
 
