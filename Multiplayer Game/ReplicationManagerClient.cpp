@@ -105,7 +105,16 @@ void ReplicationManagerClient::readSprite(const std::string& filename, GameObjec
 	else if (strcmp(filename.c_str(), App->modResources->laser->filename) == 0) //LASER
 		go->sprite->texture = App->modResources->laser;
 	else if (strcmp(filename.c_str(), App->modResources->explosion1->filename) == 0) //EXPLOSION 1
+	{
+		//Give sprite and animation clip
 		go->sprite->texture = App->modResources->explosion1;
+
+		if (go->animation == nullptr)
+		{
+			go->animation = App->modRender->addAnimation(go);
+		}
+		go->animation->clip = App->modResources->explosionClip;
+	}
 }
 
 //This Function assigns the correct behaviour
