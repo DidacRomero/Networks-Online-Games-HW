@@ -135,13 +135,19 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			LOG("Ping received from server!");	//IMPROVE: Add ms between Ping sent and Ping received?
 
 		// TODO(you): World state replication lab session
-		//If we have to replicate read!
 		if (message == ServerMessage::Replication)
 		{
-			manager_client.read(packet);
-		}
+			// TODO(you): Reliability on top of UDP lab session
+			//@ch0m5: We read the inputId of the packet received
+			if (delivery_manager2_client.readInputId(packet)) {
+				uint32 nextExpectedInputId;
+				packet.Read(nextExpectedInputId);
+				inputDataFront = nextExpectedInputId;	// And set is as the new front
 
-		// TODO(you): Reliability on top of UDP lab session
+				//@didac: If we have to replicate read!
+				manager_client.read(packet);
+			}
+		}
 	}
 }
 
@@ -226,8 +232,8 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.buttonBits;
 			}
 
-			// Clear the queue
-			inputDataFront = inputDataBack;
+			// Clear the queue	//@ch0m5: Removed queue clear for Redundancy, the server now establishes the new Front
+			//inputDataFront = inputDataBack;
 
 			sendPacket(packet, serverAddress);
 		}

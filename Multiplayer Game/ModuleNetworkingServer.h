@@ -56,7 +56,10 @@ private:
 
 		// TODO(you): World state replication lab session
 		ReplicationManagerServer manager_server;
+
 		// TODO(you): Reliability on top of UDP lab session
+		DeliveryManager delivery_manager2_server;	//@ch0m5: The "2" is in case whe CTRL+SHIFT+F REPLACE manager_server
+		float secSinceLastReplication = 0.0f;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;
@@ -123,7 +126,8 @@ private:
 
 	uint16 listenPort = 0;
 
-
+	// TODO(you): Reliability on top of UDP lab session
+	float replicationIntervalSeconds = 0.1f;
 
 	// TODO(you): UDP virtual connection lab session	(DONE)
 	float secSinceLastPacket = 0.0f;

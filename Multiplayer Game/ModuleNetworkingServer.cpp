@@ -243,6 +243,23 @@ void ModuleNetworkingServer::onUpdate()
 					LOG("Sending Ping to client <%s>.", clientProxy.name.c_str());
 				}
 
+				// TODO(you): Reliability on top of UDP lab session
+				clientProxy.secSinceLastReplication += Time.deltaTime;
+				
+				if (clientProxy.secSinceLastReplication >= replicationIntervalSeconds)
+				{
+					OutputMemoryStream replicationPacket;
+					replicationPacket << PROTOCOL_ID;
+					replicationPacket << ServerMessage::Replication;
+					Delivery* delivery = clientProxy.delivery_manager2_server.writeInputId(replicationPacket);
+					LOG("Packet Sent To Client: Sequence Nº: %u", clientProxy.nextExpectedInputSequenceNumber);
+					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
+					clientProxy.manager_server.write(replicationPacket);
+					sendPacket(replicationPacket, clientProxy.address);
+
+					clientProxy.secSinceLastReplication = 0.0f;
+				}
+
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
 				{
@@ -262,8 +279,6 @@ void ModuleNetworkingServer::onUpdate()
 					//Send the packet
 					sendPacket(packet,clientProxy.address);
 				}
-
-				// TODO(you): Reliability on top of UDP lab session
 			}
 		}
 	}
