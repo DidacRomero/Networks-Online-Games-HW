@@ -243,23 +243,6 @@ void ModuleNetworkingServer::onUpdate()
 					LOG("Sending Ping to client <%s>.", clientProxy.name.c_str());
 				}
 
-				// TODO(you): Reliability on top of UDP lab session
-				clientProxy.secSinceLastReplication += Time.deltaTime;
-				
-				if (clientProxy.secSinceLastReplication >= replicationIntervalSeconds)
-				{
-					OutputMemoryStream replicationPacket;
-					replicationPacket << PROTOCOL_ID;
-					replicationPacket << ServerMessage::Replication;
-					Delivery* delivery = clientProxy.delivery_manager2_server.writeInputId(replicationPacket);
-					LOG("Packet Sent To Client: Sequence Nº: %u", clientProxy.nextExpectedInputSequenceNumber);
-					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
-					clientProxy.manager_server.write(replicationPacket);
-					sendPacket(replicationPacket, clientProxy.address);
-
-					clientProxy.secSinceLastReplication = 0.0f;
-				}
-
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
 				{
@@ -267,17 +250,23 @@ void ModuleNetworkingServer::onUpdate()
 				}
 
 				// TODO(you): World state replication lab session
-				// Write replication packet every 100 ms (10 packets per second)
-				secToNextPacket += Time.deltaTime;
-				if (secToNextPacket >= (float)(1.0f / packetsPerSecond))
+				// TODO(you): Reliability on top of UDP lab session
+				clientProxy.secSinceLastReplication += Time.deltaTime;
+
+				if (clientProxy.secSinceLastReplication >= (float)(1.0f / packetsPerSecond))	// Write replication packet every 100 ms (10 packets per second)
 				{
 					//We Write a packet with our commands for other players
-					OutputMemoryStream packet;
-					packet << PROTOCOL_ID;
-					clientProxy.manager_server.write(packet);
+					OutputMemoryStream replicationPacket;
+					replicationPacket << PROTOCOL_ID;
+					replicationPacket << ServerMessage::Replication;
+					//replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
+					clientProxy.manager_server.write(replicationPacket);
 
-					//Send the packet
-					sendPacket(packet,clientProxy.address);
+					LOG("Packet Sent To Client- Sequence: %u", clientProxy.nextExpectedInputSequenceNumber);
+
+					sendPacket(replicationPacket, clientProxy.address);
+
+					clientProxy.secSinceLastReplication = 0.0f;
 				}
 			}
 		}

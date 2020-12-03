@@ -139,14 +139,14 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			// TODO(you): Reliability on top of UDP lab session
 			//@ch0m5: We read the inputId of the packet received
-			if (delivery_manager2_client.readInputId(packet)) {
-				uint32 nextExpectedInputId;
-				packet.Read(nextExpectedInputId);
-				inputDataFront = nextExpectedInputId;	// And set is as the new front
+			//if (delivery_manager2_client.readInputId(packet)) {
+				//uint32 nextSeqNum;
+				//packet.Read(nextSeqNum);
+				//inputDataFront = nextSeqNum;	// And set is as the new front
 
 				//@didac: If we have to replicate read!
 				manager_client.read(packet);
-			}
+			//}
 		}
 	}
 }
@@ -233,7 +233,7 @@ void ModuleNetworkingClient::onUpdate()
 			}
 
 			// Clear the queue	//@ch0m5: Removed queue clear for Redundancy, the server now establishes the new Front
-			//inputDataFront = inputDataBack;
+			inputDataFront = inputDataBack;
 
 			sendPacket(packet, serverAddress);
 		}

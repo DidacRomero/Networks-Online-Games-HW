@@ -27,7 +27,6 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 
 void ReplicationManagerServer::write(OutputMemoryStream& packet)
 {
-	packet << ServerMessage::Replication;
 	//Iterate the map to create a packet with all the changes
 	for (std::unordered_map<uint32, ReplicationCommand>::iterator it = umap.begin(); it != umap.end(); ++it)
 	{
