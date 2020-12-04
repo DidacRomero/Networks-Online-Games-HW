@@ -147,7 +147,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					
 					// TODO(you): World state replication lab session (DONE)
 					//Send each gameObject with the create action since the player just joined
-					proxy->manager_server.create(gameObject->networkId);
+					proxy->replication_manager_server.create(gameObject->networkId);
 				}
 
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
@@ -259,10 +259,9 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream replicationPacket;
 					replicationPacket << PROTOCOL_ID;
 					replicationPacket << ServerMessage::Replication;
-					//replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
-					clientProxy.manager_server.write(replicationPacket);
-
-					LOG("Packet Sent To Client- Sequence: %u", clientProxy.nextExpectedInputSequenceNumber);
+					clientProxy.delivery_manager_server.writeSeqNum(replicationPacket);
+					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
+					clientProxy.replication_manager_server.write(replicationPacket);
 
 					sendPacket(replicationPacket, clientProxy.address);
 
@@ -408,7 +407,7 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session		(DONE)
-			clientProxies[i].manager_server.create(gameObject->networkId);
+			clientProxies[i].replication_manager_server.create(gameObject->networkId);
 		}
 	}
 
@@ -423,7 +422,7 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session		(DONE)
-			clientProxies[i].manager_server.update(gameObject->networkId);
+			clientProxies[i].replication_manager_server.update(gameObject->networkId);
 		}
 	}
 }
@@ -436,7 +435,7 @@ void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session		(DONE)
-			clientProxies[i].manager_server.destroy(gameObject->networkId);
+			clientProxies[i].replication_manager_server.destroy(gameObject->networkId);
 		}
 	}
 

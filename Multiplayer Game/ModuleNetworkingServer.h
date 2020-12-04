@@ -55,11 +55,11 @@ private:
 		float secSinceLastPing = 0.0f;
 
 		// TODO(you): World state replication lab session
-		ReplicationManagerServer manager_server;
+		ReplicationManagerServer replication_manager_server;
 		float secSinceLastReplication = 0.0f;
 
 		// TODO(you): Reliability on top of UDP lab session
-		DeliveryManager delivery_manager2_server;	//@ch0m5: The "2" is in case whe CTRL+SHIFT+F REPLACE manager_server
+		DeliveryManager delivery_manager_server;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;

@@ -93,7 +93,7 @@ private:
 	//////////////////////////////////////////////////////////////////////
 
 	// TODO(you): World state replication lab session
-	ReplicationManagerClient manager_client;
+	ReplicationManagerClient replication_manager_client;
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ private:
 	//////////////////////////////////////////////////////////////////////
 
 	// TODO(you): Reliability on top of UDP lab session
-	DeliveryManager delivery_manager2_client;	//@ch0m5: The "2" is in case whe CTRL+SHIFT+F REPLACE manager_client
+	DeliveryManager delivery_manager_client;
 
 
 	//////////////////////////////////////////////////////////////////////

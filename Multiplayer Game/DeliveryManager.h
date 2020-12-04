@@ -2,6 +2,8 @@
 
 // TODO(you): Reliability on top of UDP lab session
 
+class DeliveryManager;
+
 // Sent along each packet in order to confirm its delivery
 class DeliveryManager
 {
@@ -10,11 +12,11 @@ public:
     DeliveryManager();
     ~DeliveryManager();
 
-    // Write input ID into a packet
-    void writeInputId(OutputMemoryStream& packet);
+    // Write sequence number into a packet
+    void writeSeqNum(OutputMemoryStream& packet);
 
-    // Recieve input ID from a packet
-    bool readInputId(const InputMemoryStream& packet);
+    // Recieve and process sequence number from a packet
+    bool readSeqNum(const InputMemoryStream& packet);
 
 private:
     // Sender
