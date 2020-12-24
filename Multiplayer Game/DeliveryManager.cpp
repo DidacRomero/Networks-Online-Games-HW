@@ -97,9 +97,7 @@ void DeliveryManager::readAcks(const InputMemoryStream& packet)
 				RELEASE(delivery);
 			}
 			else
-			{
 				++nextAckNum;
-			}
 		}
 	}
 }
@@ -117,9 +115,7 @@ void DeliveryManager::readLostPackets()
 			pendingDeliveries.pop();
 		}
 		else
-		{
 			break;
-		}
 	}
 }
 
