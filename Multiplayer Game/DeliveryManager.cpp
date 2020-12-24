@@ -41,6 +41,7 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
     uint32 sequenceNumber;
     packet >> sequenceNumber;
     if (sequenceNumber >= nextExpectedSequenceNumber) {
+		sequenceNumbersPendingAck.push(sequenceNumber);
         nextExpectedSequenceNumber = sequenceNumber + 1;
         return true;
     }
