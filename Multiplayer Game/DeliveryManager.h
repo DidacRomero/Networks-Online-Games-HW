@@ -50,10 +50,10 @@ public:
 
 private:
     // Sender
-    uint32 nextSentSequenceNumber = 0;          // Redundancy
+    uint32 nextOutGoingSequenceNumber = 0;          // Redundancy
     std::queue<Delivery*> pendingDeliveries;    // Acknowledgement
 
     // Receiver
     uint32 nextExpectedSequenceNumber = 0;      // Redundancy
-    std::queue<uint32> pendingAcks;             // Acknowledgement
+    std::queue<uint32> sequenceNumbersPendingAck;             // Acknowledgement
 };

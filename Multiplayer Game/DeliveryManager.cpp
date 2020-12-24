@@ -24,7 +24,7 @@ DeliveryManager::~DeliveryManager()
 // REDUNDANCY
 void DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
-    uint32 sequenceNumber = nextSentSequenceNumber++;
+    uint32 sequenceNumber = nextOutGoingSequenceNumber++;
     packet << sequenceNumber;
 
     return;
@@ -45,21 +45,21 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 // ACKNOWLEDGEMENT
 bool DeliveryManager::hasSequenceNumbersPendingAck()
 {
-	return !pendingAcks.empty();
+	return !sequenceNumbersPendingAck.empty();
 }
 
 void DeliveryManager::writeSequenceNumbersPendingAck(OutputMemoryStream& packet)
 {
-	std::size_t ackSize = pendingAcks.size();
+	std::size_t ackSize = sequenceNumbersPendingAck.size();
 	packet << ackSize;
 
 	if (ackSize > 0)
 	{
-		packet << pendingAcks.front();
+		packet << sequenceNumbersPendingAck.front();
 
 		// Clear Queue
 		std::queue<uint32> emptyQueue;
-		std::swap(pendingAcks, emptyQueue);
+		std::swap(sequenceNumbersPendingAck, emptyQueue);
 	}
 }
 
@@ -132,8 +132,8 @@ void DeliveryManager::clear()
 	std::swap(pendingDeliveries, emptyDeliveryQueue);
 
 	std::queue<uint32> emptyNumQueue;
-	std::swap(pendingAcks, emptyNumQueue);
+	std::swap(sequenceNumbersPendingAck, emptyNumQueue);
 
 	// Reset Counters
-	nextSentSequenceNumber = nextExpectedSequenceNumber = 0;
+	nextOutGoingSequenceNumber = nextExpectedSequenceNumber = 0;
 }
