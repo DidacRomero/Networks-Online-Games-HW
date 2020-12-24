@@ -266,13 +266,13 @@ void ModuleNetworkingServer::onUpdate()
 					replicationPacket << ServerMessage::Replication;
 
 					Delivery* delivery = clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
-					//CARLES CHECK
+					//DeliveryDelegate* replicationManagerMsgData = new DeliveryDelegate(&clientProxy.replication_manager_server);	//TODO: Carles
 					replicationPacket << clientProxy.nextExpectedInputSequenceNumber;
 
 					clientProxy.replication_manager_server.write(replicationPacket);
 
 					delivery->dispatchTime = Time.time;
-					//CARLES CHECK
+					//delivery->deliveryDelegate = replicationManagerMsgData;	//TODO: Carles
 
 					sendPacket(replicationPacket, clientProxy.address);
 
