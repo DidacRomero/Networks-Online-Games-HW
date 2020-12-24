@@ -131,8 +131,8 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	else if (state == ClientState::Connected)
 	{
 		// @ch0m5 Custom Code
-		if (message == ServerMessage::Ping)
-			LOG("Ping received from server!");	//IMPROVE: Add ms between Ping sent and Ping received?
+		//if (message == ServerMessage::Ping)
+		//	LOG("Ping received from server!");	//IMPROVE: Add ms between Ping sent and Ping received?
 
 		// TODO(you): World state replication lab session
 		if (message == ServerMessage::Replication)
@@ -195,7 +195,7 @@ void ModuleNetworkingClient::onUpdate()
 			packet << ClientMessage::Ping;
 			sendPacket(packet, serverAddress);
 
-			LOG("Ping sent to server!");
+			//LOG("Ping sent to server!");
 		}
 
 		// Process more inputs if there's space

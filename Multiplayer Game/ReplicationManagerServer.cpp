@@ -13,14 +13,14 @@ void ReplicationManagerServer::create(uint32 networkId)
 
 void ReplicationManagerServer::update(uint32 networkId)
 {
-	//Add to the map  with create instruction
+	//Add to the map  with update instruction
 	ReplicationCommand comm(networkId, ReplicateAction::UPDATE);
 	umap.emplace(networkId, comm);
 }
 
 void ReplicationManagerServer::destroy(uint32 networkId)
 {
-	//Add to the map  with create instruction
+	//Add to the map  with destroy instruction
 	ReplicationCommand comm(networkId, ReplicateAction::DESTROY);
 	umap.emplace(networkId, comm);
 }
@@ -64,6 +64,13 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 				packet << go->position.x;
 				packet << go->position.y;
 				packet << go->angle;
+
+				if(go->behaviour != nullptr && go->behaviour->type() == BehaviourType::Spaceship)
+				{
+					Spaceship* ship = (Spaceship*)go->behaviour;
+					//Update life
+					packet << ship->hitPoints;
+				}
 			}
 		}
 		else if ((*it).second.action == ReplicateAction::DESTROY)

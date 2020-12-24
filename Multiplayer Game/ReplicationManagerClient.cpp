@@ -68,6 +68,15 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 					packet >> go->position.x;
 					packet >> go->position.y;
 					packet >> go->angle;
+
+					//If it's a spaceship update
+					if (go->behaviour != nullptr && go->behaviour->type() == BehaviourType::Spaceship)
+					{
+						//ALERT!!!! HARD TEST THIS we might need to pass the type of behaviour in order to add the packet bytes of such an update, in case the spaceship would be nullptr
+						Spaceship* ship = (Spaceship*)go->behaviour;
+						packet >> ship->hitPoints;
+						packet_bytes += sizeof(ship->hitPoints);
+					}
 				}
 
 				packet_bytes += sizeof(go->position.x);
@@ -80,6 +89,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 				if (go != nullptr)
 				{
+					//DLOG(" Destroyed gameobject a GameObject from client");
 					App->modLinkingContext->unregisterNetworkGameObject(go);
 					App->modGameObject->Destroy(go);
 				}
