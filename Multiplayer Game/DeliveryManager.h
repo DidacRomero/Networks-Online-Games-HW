@@ -49,11 +49,11 @@ public:
     void clear();
 
 private:
-    // REDUNDANCY
-    uint32 nextSentSequenceNumber = 0;          // Sender
-    uint32 nextExpectedSequenceNumber = 0;      // Receiver
+    // Sender
+    uint32 nextSentSequenceNumber = 0;          // Redundancy
+    std::queue<Delivery*> pendingDeliveries;    // Acknowledgement
 
-    // ACKNOWLEDGEMENT
-    std::queue<Delivery*> pendingDeliveries;    // Sender
-    std::queue<uint32> pendingAcks;             // Receiver
+    // Receiver
+    uint32 nextExpectedSequenceNumber = 0;      // Redundancy
+    std::queue<uint32> pendingAcks;             // Acknowledgement
 };
