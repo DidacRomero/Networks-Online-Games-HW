@@ -38,7 +38,7 @@ public:
 
     // ACKNOWLEDGEMENT
     // Receiver: Write ack'ed sequence numbers into a packet
-    bool hasSequenceNumbersPendingAck();
+    bool hasSequenceNumbersPendingAck() const;
     void writeSequenceNumbersPendingAck(OutputMemoryStream& packet);
 
     // Sender: Process ack'ed sequence numbers from a packet

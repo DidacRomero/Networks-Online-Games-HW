@@ -51,7 +51,7 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 }
 
 // ACKNOWLEDGEMENT
-bool DeliveryManager::hasSequenceNumbersPendingAck()
+bool DeliveryManager::hasSequenceNumbersPendingAck() const
 {
 	return !sequenceNumbersPendingAck.empty();
 }

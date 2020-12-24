@@ -148,6 +148,14 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				//@didac: If we have to replicate read!
 				replication_manager_client.read(packet);
 			}
+
+			// ACKNOWLEDGEMENT
+			if (delivery_manager_client.hasSequenceNumbersPendingAck()) {
+				OutputMemoryStream stream;
+				stream << ClientMessage::Acknowledgement;
+				delivery_manager_client.writeSequenceNumbersPendingAck(stream);
+				sendPacket(stream, fromAddress);
+			}
 		}
 	}
 }
