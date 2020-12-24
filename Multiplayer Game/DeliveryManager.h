@@ -20,6 +20,7 @@ public:
     DeliveryManager();
     ~DeliveryManager();
 
+    // REDUNDANCY
     // Write sequence number into a packet
     void writeSequenceNumber(OutputMemoryStream& packet);
 

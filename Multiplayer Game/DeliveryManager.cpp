@@ -21,6 +21,7 @@ DeliveryManager::~DeliveryManager()
 {
 }
 
+// REDUNDANCY
 void DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
     uint32 sequenceNumber = nextSentSequenceNumber++;
