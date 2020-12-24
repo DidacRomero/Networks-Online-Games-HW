@@ -21,16 +21,30 @@ public:
     ~DeliveryManager();
 
     // REDUNDANCY
-    // Write sequence number into a packet
+    // Sender: Write sequence number into a packet
     void writeSequenceNumber(OutputMemoryStream& packet);
 
-    // Recieve and process sequence number from a packet
+    // Reciever: Recieve and process sequence number from a packet
     bool readSequenceNumber(const InputMemoryStream& packet);
 
-private:
-    // Sender
-    uint32 nextSentSequenceNumber = 0;
+    // ACKNOWLEDGEMENT
+    // Receiver: Check for pending Acks and write them into a packet
+    bool hasPendingAcks();
+    void writePendingAcks(OutputMemoryStream& packet);
 
-    // Receiver
-    uint32 nextExpectedSequenceNumber = 0;
+    // Sender: Process acks from a packet
+    void readAcks(const InputMemoryStream& packet);
+    void readLostPackets();
+
+    // Clear all queues and reset counters
+    void clear();
+
+private:
+    // REDUNDANCY
+    uint32 nextSentSequenceNumber = 0;          // Sender
+    uint32 nextExpectedSequenceNumber = 0;      // Receiver
+
+    // ACKNOWLEDGEMENT
+    std::deque<Delivery*> pendingDeliveries;    // Sender
+    std::deque<uint32> pendingAcks;             // Receiver
 };
