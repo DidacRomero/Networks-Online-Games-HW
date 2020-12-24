@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 // TODO(you): Reliability on top of UDP lab session
 
 class DeliveryManager;
@@ -45,6 +47,6 @@ private:
     uint32 nextExpectedSequenceNumber = 0;      // Receiver
 
     // ACKNOWLEDGEMENT
-    std::deque<Delivery*> pendingDeliveries;    // Sender
-    std::deque<uint32> pendingAcks;             // Receiver
+    std::queue<Delivery*> pendingDeliveries;    // Sender
+    std::queue<uint32> pendingAcks;             // Receiver
 };

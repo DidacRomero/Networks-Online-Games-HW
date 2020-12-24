@@ -56,7 +56,10 @@ void DeliveryManager::writePendingAcks(OutputMemoryStream& packet)
 	if (ackSize > 0)
 	{
 		packet << pendingAcks.front();
-		pendingAcks.clear();
+
+		// Clear Queue
+		std::queue<uint32> emptyQueue;
+		std::swap(pendingAcks, emptyQueue);
 	}
 }
 
@@ -81,13 +84,13 @@ void DeliveryManager::readAcks(const InputMemoryStream& packet)
 				// CARLES: Check
 
 				RELEASE(delivery);
-				pendingDeliveries.pop_front();
+				pendingDeliveries.pop();
 				++nextAckNum;
 			}
 			else if (delivery->sequenceNumber < nextAckNum)
 			{
 				Delivery* deliveryCopy = delivery;
-				pendingDeliveries.pop_front();
+				pendingDeliveries.pop();
 				
 				// CARLES: Check
 
@@ -111,7 +114,7 @@ void DeliveryManager::readLostPackets()
 			// CARLES: Check
 
 			RELEASE(delivery);
-			pendingDeliveries.pop_front();
+			pendingDeliveries.pop();
 		}
 		else
 		{
@@ -125,11 +128,16 @@ void DeliveryManager::clear()
 	while (!pendingDeliveries.empty())
 	{
 		RELEASE(pendingDeliveries.front());
-		pendingDeliveries.pop_front();
+		pendingDeliveries.pop();
 	}
 
-	pendingDeliveries.clear();
-	pendingAcks.clear();
+	// Clear Queues
+	std::queue<Delivery*> emptyDeliveryQueue;
+	std::swap(pendingDeliveries, emptyDeliveryQueue);
 
+	std::queue<uint32> emptyNumQueue;
+	std::swap(pendingAcks, emptyNumQueue);
+
+	// Reset Counters
 	nextSentSequenceNumber = nextExpectedSequenceNumber = 0;
 }
