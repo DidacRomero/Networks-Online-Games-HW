@@ -7,6 +7,7 @@
 Delivery::Delivery(uint32 sequenceNumber)
     : sequenceNumber(sequenceNumber)
 {
+	dispatchTime = Time.time;
 }
 
 Delivery::~Delivery()

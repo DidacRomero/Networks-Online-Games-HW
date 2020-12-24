@@ -271,7 +271,6 @@ void ModuleNetworkingServer::onUpdate()
 
 					clientProxy.replication_manager_server.write(replicationPacket);
 
-					delivery->dispatchTime = Time.time;
 					//delivery->deliveryDelegate = replicationManagerMsgData;	//TODO: Carles
 
 					sendPacket(replicationPacket, clientProxy.address);
