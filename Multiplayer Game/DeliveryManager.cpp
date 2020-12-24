@@ -82,9 +82,9 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 		packet >> firstAckNum;
 
 		uint32 nextAckNum = firstAckNum;
-		uint32 onePastAckdSequenceNumber = nextAckNum + (uint32)ackSize;	// WARNING: Carles check if the cast works correctly
+		uint32 onePastLast = nextAckNum + (uint32)ackSize;	// WARNING: Carles, check if the cast works correctly
 
-		while (nextAckNum < onePastAckdSequenceNumber && !pendingDeliveries.empty())
+		while (nextAckNum < onePastLast && !pendingDeliveries.empty())
 		{
 			Delivery* delivery = pendingDeliveries.front();
 			if (delivery->sequenceNumber == nextAckNum)
@@ -93,16 +93,15 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 
 				RELEASE(delivery);
 				pendingDeliveries.pop();
+
 				++nextAckNum;
 			}
 			else if (delivery->sequenceNumber < nextAckNum)
 			{
-				Delivery* deliveryCopy = delivery;
-				pendingDeliveries.pop();
-				
-				deliveryCopy->deliveryDelegate->onDeliveryFailure(this);
+				delivery->deliveryDelegate->onDeliveryFailure(this);	// WARNING: If something breaks it might be because of this
 
 				RELEASE(delivery);
+				pendingDeliveries.pop();
 			}
 			else
 				++nextAckNum;
