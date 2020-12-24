@@ -224,6 +224,9 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
+				// TODO(you): Reliability on top of UDP lab session	(DONE)
+				clientProxy.delivery_manager_server.processTimedOutPackets();
+
 				// TODO(you): UDP virtual connection lab session	(DONE)
 				clientProxy.secSinceLastPacket += Time.deltaTime;
 

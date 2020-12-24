@@ -151,10 +151,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 			// ACKNOWLEDGEMENT
 			if (delivery_manager_client.hasSequenceNumbersPendingAck()) {
-				OutputMemoryStream stream;
-				stream << ClientMessage::Acknowledgement;
-				delivery_manager_client.writeSequenceNumbersPendingAck(stream);
-				sendPacket(stream, fromAddress);
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ClientMessage::Acknowledgement;
+				delivery_manager_client.writeSequenceNumbersPendingAck(packet);
+				sendPacket(packet, fromAddress);
 			}
 		}
 	}
