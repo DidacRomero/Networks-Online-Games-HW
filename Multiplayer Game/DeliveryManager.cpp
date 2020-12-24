@@ -10,7 +10,9 @@ Delivery::Delivery(uint32 sequenceNumber)
 }
 
 Delivery::~Delivery()
-{}
+{
+	RELEASE(deliveryDelegate);
+}
 
 // DELIVERY_MANAGER
 DeliveryManager::DeliveryManager()
@@ -19,6 +21,7 @@ DeliveryManager::DeliveryManager()
 
 DeliveryManager::~DeliveryManager()
 {
+	clear();
 }
 
 // REDUNDANCY
@@ -84,7 +87,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 			Delivery* delivery = pendingDeliveries.front();
 			if (delivery->sequenceNumber == nextAckNum)
 			{
-				// CARLES: Check
+				delivery->deliveryDelegate->onDeliverySuccess(this);
 
 				RELEASE(delivery);
 				pendingDeliveries.pop();
@@ -95,7 +98,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 				Delivery* deliveryCopy = delivery;
 				pendingDeliveries.pop();
 				
-				// CARLES: Check
+				deliveryCopy->deliveryDelegate->onDeliveryFailure(this);
 
 				RELEASE(delivery);
 			}
@@ -112,7 +115,7 @@ void DeliveryManager::processTimedOutPackets()
 		Delivery* delivery = pendingDeliveries.front();
 		if (Time.time - delivery->dispatchTime >= ACK_INTERVAL_SECONDS)
 		{
-			// CARLES: Check
+			delivery->deliveryDelegate->onDeliveryFailure(this);
 
 			RELEASE(delivery);
 			pendingDeliveries.pop();

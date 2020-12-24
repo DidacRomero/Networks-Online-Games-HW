@@ -18,7 +18,7 @@ struct Delivery {
 
     uint32 sequenceNumber = 0;
     double dispatchTime = 0.0;
-    DeliveryDelegate* delegate = nullptr;
+    DeliveryDelegate* deliveryDelegate = nullptr;
 };
 
 // Sent along each packet in order to confirm its delivery
