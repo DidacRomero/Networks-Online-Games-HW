@@ -89,7 +89,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 				if (go != nullptr)
 				{
-					//DLOG(" Destroyed gameobject a GameObject from client");
+					DLOG(" Destroyed a GameObject from client");
 					App->modLinkingContext->unregisterNetworkGameObject(go);
 					App->modGameObject->Destroy(go);
 				}
@@ -136,6 +136,7 @@ void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObje
 	{
 		go->behaviour = (Spaceship*)b;
 		go->behaviour->isServer = false;
+		go->behaviour->isLocalPlayer = false;
 		go->size = { 100,100 };
 		go->collider = App->modCollision->addCollider(ColliderType::Player, go);
 		//go->collider->isTrigger = false;
