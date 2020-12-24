@@ -8,7 +8,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 	//Check if the packet is empty
 	if (packet.GetSize() > sizeof(PacketHeader))
 	{
-		uint16 packet_bytes = sizeof(PacketHeader) + sizeof(uint32) * 2;	//@ch0m5: The added 2 uint32 are from the packetSeqNum and the inputSeqNum
+		uint16 packet_bytes = sizeof(PacketHeader) + sizeof(uint32) * 2;	//@ch0m5: The added 2 uint32 are from the packetSequenceNumber and the inputSequenceNumber
 
 		//Iterate as long as we haven't finished emptying the packet
 		while (packet.GetSize() > packet_bytes)
