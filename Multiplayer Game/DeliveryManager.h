@@ -51,9 +51,9 @@ public:
 private:
     // Sender
     uint32 nextOutGoingSequenceNumber = 0;          // Redundancy
-    std::queue<Delivery*> pendingDeliveries;        // Acknowledgement
+    std::queue<Delivery*> pendingDeliveries;        // Acknowledgment
 
     // Receiver
     uint32 nextExpectedSequenceNumber = 0;          // Redundancy
-    std::queue<uint32> sequenceNumbersPendingAck;   // Acknowledgement
+    std::queue<uint32> sequenceNumbersPendingAck;   // Acknowledgment
 };
