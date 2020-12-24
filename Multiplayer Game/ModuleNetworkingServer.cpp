@@ -259,9 +259,15 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream replicationPacket;
 					replicationPacket << PROTOCOL_ID;
 					replicationPacket << ServerMessage::Replication;
-					clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
-					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
+
+					Delivery* delivery = clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
+					//CARLES CHECK
+					replicationPacket << clientProxy.nextExpectedInputSequenceNumber;
+
 					clientProxy.replication_manager_server.write(replicationPacket);
+
+					delivery->dispatchTime = Time.time;
+					//CARLES CHECK
 
 					sendPacket(replicationPacket, clientProxy.address);
 
