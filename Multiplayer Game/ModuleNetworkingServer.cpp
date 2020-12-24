@@ -259,7 +259,7 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream replicationPacket;
 					replicationPacket << PROTOCOL_ID;
 					replicationPacket << ServerMessage::Replication;
-					clientProxy.delivery_manager_server.writeSeqNum(replicationPacket);
+					clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
 					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
 					clientProxy.replication_manager_server.write(replicationPacket);
 

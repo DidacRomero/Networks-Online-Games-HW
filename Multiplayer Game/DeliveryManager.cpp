@@ -3,6 +3,15 @@
 
 // TODO(you): Reliability on top of UDP lab session
 
+// DELIVERY
+Delivery::Delivery(uint32 sequenceNumber)
+    : sequenceNumber(sequenceNumber)
+{
+}
+
+Delivery::~Delivery()
+{}
+
 // DELIVERY_MANAGER
 DeliveryManager::DeliveryManager()
 {
@@ -12,20 +21,20 @@ DeliveryManager::~DeliveryManager()
 {
 }
 
-void DeliveryManager::writeSeqNum(OutputMemoryStream& packet)
+void DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
-    uint32 sequenceNumber = nextSentSeqNum++;
+    uint32 sequenceNumber = nextSentSequenceNumber++;
     packet << sequenceNumber;
 
     return;
 }
 
-bool DeliveryManager::readSeqNum(const InputMemoryStream& packet)
+bool DeliveryManager::readSequenceNumber(const InputMemoryStream& packet)
 {
     uint32 sequenceNumber;
     packet >> sequenceNumber;
-    if (sequenceNumber >= nextExpectedSeqNum) {
-        nextExpectedSeqNum = sequenceNumber + 1;
+    if (sequenceNumber >= nextExpectedSequenceNumber) {
+        nextExpectedSequenceNumber = sequenceNumber + 1;
         return true;
     }
 

@@ -4,6 +4,14 @@
 
 class DeliveryManager;
 
+struct Delivery {
+    Delivery(uint32 sequenceNumber);
+    ~Delivery();
+
+    uint32 sequenceNumber = 0;
+    double timestamp = 0.0;
+};
+
 // Sent along each packet in order to confirm its delivery
 class DeliveryManager
 {
@@ -13,15 +21,15 @@ public:
     ~DeliveryManager();
 
     // Write sequence number into a packet
-    void writeSeqNum(OutputMemoryStream& packet);
+    void writeSequenceNumber(OutputMemoryStream& packet);
 
     // Recieve and process sequence number from a packet
-    bool readSeqNum(const InputMemoryStream& packet);
+    bool readSequenceNumber(const InputMemoryStream& packet);
 
 private:
     // Sender
-    uint32 nextSentSeqNum = 0;
+    uint32 nextSentSequenceNumber = 0;
 
     // Receiver
-    uint32 nextExpectedSeqNum = 0;
+    uint32 nextExpectedSequenceNumber = 0;
 };
