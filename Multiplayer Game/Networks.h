@@ -14,13 +14,14 @@
 #endif
 #define ASSERT(x) if ((x) == false) { *(int*)0 = 0; }
 
+#define RELEASE(ptr) if (ptr != nullptr) { delete ptr; } ptr = nullptr;
+
 #define Kilobytes(x) (1024L * x)
 #define Megabytes(x) (1024L * Kilobytes(x))
 #define Gigabytes(x) (1024L * Megabytes(x))
 #define Terabytes(x) (1024L * Gigabytes(x))
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-
 
 ////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -42,7 +43,7 @@
 #define PACKET_DELIVERY_TIMEOUT_SECONDS                 0.5f
 #define DEFAULT_PACKET_SIZE                     Kilobytes(4)
 #define PING_INTERVAL_SECONDS                           0.5f
-
+#define ACK_INTERVAL_SECONDS							0.3f
 
 ////////////////////////////////////////////////////////////////////////
 // BASIC TYPES

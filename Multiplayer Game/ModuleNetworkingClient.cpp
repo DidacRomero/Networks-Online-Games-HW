@@ -139,13 +139,23 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			// TODO(you): Reliability on top of UDP lab session
 			//@ch0m5: We read the inputId of the packet received
-			if (delivery_manager_client.readSeqNum(packet)) {
-				uint32 nextInputSeqNum;
-				packet.Read(nextInputSeqNum);
-				inputDataFront = nextInputSeqNum;
+			if (delivery_manager_client.processSequenceNumber(packet))
+			{
+				uint32 nextInputSequenceNumber;
+				packet >> nextInputSequenceNumber;
+				inputDataFront = nextInputSequenceNumber;
 
 				//@didac: If we have to replicate read!
 				replication_manager_client.read(packet);
+			}
+
+			// ACKNOWLEDGEMENT
+			if (delivery_manager_client.hasSequenceNumbersPendingAck()) {
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ClientMessage::Acknowledgement;
+				delivery_manager_client.writeSequenceNumbersPendingAck(packet);
+				sendPacket(packet, fromAddress);
 			}
 		}
 	}

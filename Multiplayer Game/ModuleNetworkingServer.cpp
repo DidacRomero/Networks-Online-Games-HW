@@ -167,11 +167,11 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			// Process the input packet and update the corresponding game object
 			if (proxy != nullptr && IsValid(proxy->gameObject))
 			{
-				// TODO(you): Reliability on top of UDP lab session
-
 				// Read input data
 				while (packet.RemainingByteCount() > 0)
 				{
+					// TODO(you): Reliability on top of UDP lab session
+
 					InputPacketData inputData;
 					packet >> inputData.sequenceNumber;
 					packet >> inputData.horizontalAxis;
@@ -188,8 +188,13 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					}
 				}
 			}
-		}	// TODO(you): UDP virtual connection lab session	(DONE)
-		else if (message == ClientMessage::Ping)
+		}
+		else if (message == ClientMessage::Acknowledgement)
+		{
+			if (proxy != nullptr)
+				proxy->delivery_manager_server.processAckdSequenceNumbers(packet);	// TODO(you): Reliability on top of UDP lab session	(DONE)
+		}
+		else if (message == ClientMessage::Ping)	// TODO(you): UDP virtual connection lab session	(DONE)
 		{
 			proxy->secSinceLastPacket = 0.0f;
 			LOG("Recived Ping from <%s>!", proxy->name.c_str());
@@ -219,6 +224,9 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
+				// TODO(you): Reliability on top of UDP lab session	(DONE)
+				clientProxy.delivery_manager_server.processTimedOutPackets();
+
 				// TODO(you): UDP virtual connection lab session	(DONE)
 				clientProxy.secSinceLastPacket += Time.deltaTime;
 
@@ -259,9 +267,14 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream replicationPacket;
 					replicationPacket << PROTOCOL_ID;
 					replicationPacket << ServerMessage::Replication;
-					clientProxy.delivery_manager_server.writeSeqNum(replicationPacket);
-					replicationPacket.Write(clientProxy.nextExpectedInputSequenceNumber);
+
+					Delivery* delivery = clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
+					//DeliveryDelegate* replicationManagerMsgData = new DeliveryDelegate(&clientProxy.replication_manager_server);	//TODO: Carles
+					replicationPacket << clientProxy.nextExpectedInputSequenceNumber;
+
 					clientProxy.replication_manager_server.write(replicationPacket);
+
+					//delivery->deliveryDelegate = replicationManagerMsgData;	//TODO: Carles
 
 					sendPacket(replicationPacket, clientProxy.address);
 

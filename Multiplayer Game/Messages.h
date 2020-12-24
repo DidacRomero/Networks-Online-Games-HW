@@ -4,7 +4,8 @@ enum class ClientMessage : uint8
 {
 	Hello,
 	Input,
-	Ping   // NOTE(jesus): Use this message type in the virtual connection lab session
+	Ping,   // NOTE(jesus): Use this message type in the virtual connection lab session
+	Acknowledgement
 };
 
 enum class ServerMessage : uint8
@@ -12,5 +13,5 @@ enum class ServerMessage : uint8
 	Welcome,
 	Unwelcome,
 	Ping,
-	Replication// NOTE(jesus): Use this message type in the virtual connection lab session
+	Replication	// NOTE(jesus): Use this message type in the virtual connection lab session
 };
