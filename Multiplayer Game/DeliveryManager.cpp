@@ -30,7 +30,7 @@ void DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
     return;
 }
 
-bool DeliveryManager::readSequenceNumber(const InputMemoryStream& packet)
+bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 {
     uint32 sequenceNumber;
     packet >> sequenceNumber;
@@ -43,12 +43,12 @@ bool DeliveryManager::readSequenceNumber(const InputMemoryStream& packet)
 }
 
 // ACKNOWLEDGEMENT
-bool DeliveryManager::hasPendingAcks()
+bool DeliveryManager::hasSequenceNumbersPendingAck()
 {
 	return !pendingAcks.empty();
 }
 
-void DeliveryManager::writePendingAcks(OutputMemoryStream& packet)
+void DeliveryManager::writeSequenceNumbersPendingAck(OutputMemoryStream& packet)
 {
 	std::size_t ackSize = pendingAcks.size();
 	packet << ackSize;
@@ -63,7 +63,7 @@ void DeliveryManager::writePendingAcks(OutputMemoryStream& packet)
 	}
 }
 
-void DeliveryManager::readAcks(const InputMemoryStream& packet)
+void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet)
 {
 	std::size_t ackSize;
 	packet >> ackSize;
@@ -102,12 +102,12 @@ void DeliveryManager::readAcks(const InputMemoryStream& packet)
 	}
 }
 
-void DeliveryManager::readLostPackets()
+void DeliveryManager::processTimedOutPackets()
 {
 	while (!pendingDeliveries.empty())
 	{
 		Delivery* delivery = pendingDeliveries.front();
-		if (Time.time - delivery->timestamp >= ACK_INTERVAL_SECONDS)
+		if (Time.time - delivery->dispatchTime >= ACK_INTERVAL_SECONDS)
 		{
 			// CARLES: Check
 
