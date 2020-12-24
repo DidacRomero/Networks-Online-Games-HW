@@ -31,7 +31,7 @@ public:
 
     // REDUNDANCY
     // Sender: Write new sequence numbers into a packet
-    void writeSequenceNumber(OutputMemoryStream& packet);
+    Delivery* writeSequenceNumber(OutputMemoryStream& packet);
 
     // Reciever: Process the sequence number from an incoming packet
     bool processSequenceNumber(const InputMemoryStream& packet);

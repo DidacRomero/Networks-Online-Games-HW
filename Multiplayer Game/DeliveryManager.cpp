@@ -22,12 +22,15 @@ DeliveryManager::~DeliveryManager()
 }
 
 // REDUNDANCY
-void DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
+Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
     uint32 sequenceNumber = nextOutGoingSequenceNumber++;
     packet << sequenceNumber;
 
-    return;
+	Delivery* delivery = new Delivery(sequenceNumber);
+	pendingDeliveries.push(delivery);
+
+    return delivery;
 }
 
 bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
