@@ -157,11 +157,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 					for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 					{
 						InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
-						InputController controller;
-
-						controller.horizontalAxis = inputPacketData.horizontalAxis;
-						controller.verticalAxis = inputPacketData.verticalAxis;
-						unpackInputControllerButtons(inputPacketData.buttonBits, controller);
+						InputController controller = inputControllerFromInputPacketData(inputPacketData, controller);	// WARNING: Passing as a parameter at the same time as declaration, optimal but beware.
 
 						if (playerGameObject != nullptr)
 							playerGameObject->behaviour->onInput(controller);
