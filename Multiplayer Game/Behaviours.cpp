@@ -129,7 +129,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 				size = 250.0f + 100.0f * Random.next();
 				position = gameObject->position;
 
-				NetworkDestroy(gameObject);
+				NetworkDestroy(gameObject,0.2f);	// The bug of the ship being already destroyed before being able to destroy on the client was caused by this, fixed it now
 			}
 
 			GameObject *explosion = NetworkInstantiate();
