@@ -150,19 +150,19 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 				if (clientPrediction)
 				{
-					GameObject* playerGO = App->modLinkingContext->getNetworkGameObject(networkId);
+					GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
 
 					for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 					{
 						InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
 						InputController controller;
+
 						controller.horizontalAxis = inputPacketData.horizontalAxis;
 						controller.verticalAxis = inputPacketData.verticalAxis;
-
 						unpackInputControllerButtons(inputPacketData.buttonBits, controller);
 
-						if (playerGO != nullptr)
-							playerGO->behaviour->onInput(controller);	//Carles Check
+						if (playerGameObject != nullptr)
+							playerGameObject->behaviour->onInput(controller);
 					}
 				}
 			}
@@ -236,34 +236,42 @@ void ModuleNetworkingClient::onUpdate()
 			inputPacketData.horizontalAxis = Input.horizontalAxis;
 			inputPacketData.verticalAxis = Input.verticalAxis;
 			inputPacketData.buttonBits = packInputControllerButtons(Input);
-		}
 
-		secondsSinceLastInputDelivery += Time.deltaTime;
-
-		// Input delivery interval timed out: create a new input packet
-		if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
-		{
-			secondsSinceLastInputDelivery = 0.0f;
-
-			OutputMemoryStream packet;
-			packet << PROTOCOL_ID;
-			packet << ClientMessage::Input;
-
-			// TODO(you): Reliability on top of UDP lab session
-
-			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
+			if (clientPrediction)
 			{
-				InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
-				packet << inputPacketData.sequenceNumber;
-				packet << inputPacketData.horizontalAxis;
-				packet << inputPacketData.verticalAxis;
-				packet << inputPacketData.buttonBits;
+				GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
+
+				if (playerGameObject != nullptr)
+					playerGameObject->behaviour->onInput(Input);
 			}
 
-			// Clear the queue	//@ch0m5: Removed queue clear for Redundancy, the server now establishes the new Front
-			//inputDataFront = inputDataBack;
+			secondsSinceLastInputDelivery += Time.deltaTime;
 
-			sendPacket(packet, serverAddress);
+			// Input delivery interval timed out: create a new input packet
+			if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
+			{
+				secondsSinceLastInputDelivery = 0.0f;
+
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ClientMessage::Input;
+
+				// TODO(you): Reliability on top of UDP lab session
+
+				for (uint32 i = inputDataFront; i < inputDataBack; ++i)
+				{
+					InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
+					packet << inputPacketData.sequenceNumber;
+					packet << inputPacketData.horizontalAxis;
+					packet << inputPacketData.verticalAxis;
+					packet << inputPacketData.buttonBits;
+				}
+
+				// Clear the queue	//@ch0m5: Removed queue clear for Redundancy, the server now establishes the new Front
+				//inputDataFront = inputDataBack;
+
+				sendPacket(packet, serverAddress);
+			}
 		}
 
 		// TODO(you): Latency management lab session
