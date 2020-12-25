@@ -96,6 +96,8 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
+
+			ImGui::Checkbox("Client Prediction", &clientPrediction);
 		}
 	}
 }
