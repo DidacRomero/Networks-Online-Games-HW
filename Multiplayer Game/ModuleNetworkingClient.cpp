@@ -147,6 +147,24 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 				//@didac: If we have to replicate read!
 				replication_manager_client.read(packet);
+
+				if (clientPrediction)
+				{
+					GameObject* playerGO = App->modLinkingContext->getNetworkGameObject(networkId);
+
+					for (uint32 i = inputDataFront; i < inputDataBack; ++i)
+					{
+						InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
+						InputController controller;
+						controller.horizontalAxis = inputPacketData.horizontalAxis;
+						controller.verticalAxis = inputPacketData.verticalAxis;
+
+						unpackInputControllerButtons(inputPacketData.buttonBits, controller);
+
+						if (playerGO != nullptr)
+							playerGO->behaviour->onInput(controller);	//Carles Check
+					}
+				}
 			}
 
 			// ACKNOWLEDGEMENT
