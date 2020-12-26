@@ -84,6 +84,12 @@ void ModuleNetworkingClient::onGui()
 			if (playerGameObject != nullptr) {
 				playerPosition = playerGameObject->position;
 			}
+			else
+			{
+				//isnull, just to debug 
+				int test = 0;
+			}
+
 			ImGui::Text(" - Coordinates: (%f, %f)", playerPosition.x, playerPosition.y);
 
 			ImGui::Separator();

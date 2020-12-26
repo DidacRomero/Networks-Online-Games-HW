@@ -26,7 +26,7 @@ void Laser::update()
 
 		const float lifetimeSeconds = 2.0f;
 		if (secondsSinceCreation >= lifetimeSeconds) {
-			NetworkDestroy(gameObject);
+			NetworkDestroy(gameObject, 0.5f);
 		}
 	}
 }

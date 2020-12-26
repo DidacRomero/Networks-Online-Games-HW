@@ -16,6 +16,8 @@ public:
 
 	void unregisterNetworkGameObject(GameObject * gameObject);
 
+	bool isNetworkIndexOccupied(uint32 networkId);
+
 	void clear();
 
 private:

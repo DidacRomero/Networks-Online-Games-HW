@@ -27,8 +27,21 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			{
 				//If Create, create the gameobject, link it & deserialize
 				GameObject* go = App->modGameObject->Instantiate();
-				go->networkId = networkId;
-				App->modLinkingContext->registerNetworkGameObject(go);
+
+				//If the gameObject doesn't exist, create it else flag for destruction of the dummy
+				if (App->modLinkingContext->isNetworkIndexOccupied(networkId) == false)
+					App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkId);
+				else
+				{
+					//Only called when a network gameobject should be destroyed, so it will always contain a GameObject *
+					GameObject* to_destroy = App->modLinkingContext->getNetworkGameObject(networkId, false);
+					App->modLinkingContext->unregisterNetworkGameObject(to_destroy);
+					App->modGameObject->Destroy(to_destroy);
+
+					//Register the new gameObject
+					App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkId);
+				}
+					
 
 				//Now we need to fill ALL the data of the gameObject, position, behaviour, sprite etc.
 				packet >> go->position.x;

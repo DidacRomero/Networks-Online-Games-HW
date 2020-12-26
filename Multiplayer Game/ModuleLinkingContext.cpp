@@ -86,6 +86,17 @@ void ModuleLinkingContext::unregisterNetworkGameObject(GameObject *gameObject)
 	networkGameObjectsCount--;
 }
 
+//Quick Check to see if a networkId would occupy a Network Index, 
+//(used for cases in which 2 UID's could fill the same position as described in common problems)
+//We can then use getNetworkGameObject without a safe check to manage that GameObject
+bool ModuleLinkingContext::isNetworkIndexOccupied(uint32 networkId)
+{
+	if (networkGameObjects[arrayIndexFromNetworkId(networkId)] != nullptr)
+		return true;
+	else
+		return false;
+}
+
 void ModuleLinkingContext::clear()
 {
 	for (uint16 i = 0; i < MAX_NETWORK_OBJECTS; ++i)
