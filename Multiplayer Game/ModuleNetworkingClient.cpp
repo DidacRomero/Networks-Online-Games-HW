@@ -18,7 +18,14 @@ void ModuleNetworkingClient::setPlayerInfo(const char * pPlayerName, uint8 pSpac
 	spaceshipType = pSpaceshipType;
 }
 
+float ModuleNetworkingClient::calcAvgReplicationTime() const
+{
+	float avg = 0.0f;
+	for (int i = 0; i < REPLICATION_TIME_BUFFER_SIZE; ++i)
+		avg += replicationTimeBuffer[i];
 
+	return avg / REPLICATION_TIME_BUFFER_SIZE;
+}
 
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworking virtual methods
@@ -51,6 +58,8 @@ void ModuleNetworkingClient::onStart()
 
 	secondsSinceLastHello = 9999.0f;
 	secondsSinceLastInputDelivery = 0.0f;
+	secSinceLastPing = 0.0f;
+	secSinceLastPacket = 0.0f;
 }
 
 void ModuleNetworkingClient::onGui()
@@ -104,6 +113,8 @@ void ModuleNetworkingClient::onGui()
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
 
 			ImGui::Checkbox("Client Prediction", &clientPrediction);
+
+			ImGui::Checkbox("Entity Interpolation", &mustEnableInterpolation);
 		}
 	}
 }
@@ -153,6 +164,9 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				packet >> nextInputSequenceNumber;
 				inputDataFront = nextInputSequenceNumber;
 
+				// We use a double boolean to restrict and control the de/activation of interpolation
+				entityInterpolation = mustEnableInterpolation;
+
 				//@didac: If we have to replicate read!
 				replication_manager_client.read(packet);
 
@@ -170,6 +184,10 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 					}
 				}
 			}
+
+			// INTERPOLATION
+			if (entityInterpolation)   // On recieved replication packet: Advance iteratior by 1 and reset respctive array value to 0
+				replicationTimeBuffer[++replicationTimeIterator % ArrayCount(replicationTimeBuffer)] = 0.0f;
 
 			// ACKNOWLEDGEMENT
 			if (delivery_manager_client.hasSequenceNumbersPendingAck()) {
@@ -279,6 +297,9 @@ void ModuleNetworkingClient::onUpdate()
 		}
 
 		// TODO(you): Latency management lab session
+		// INTERPOLATION
+		if (entityInterpolation)   // Add deltaTime to current buffer index each frame
+			replicationTimeBuffer[replicationTimeIterator % ArrayCount(replicationTimeBuffer)] += Time.deltaTime;
 
 		// Update camera for player
 		GameObject *playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
