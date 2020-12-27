@@ -170,6 +170,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				//@didac: If we have to replicate read!
 				replication_manager_client.read(packet);
 
+				// CLIENT PREDICTION: Server Reconciliation
 				if (clientPrediction)
 				{
 					GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
@@ -259,6 +260,7 @@ void ModuleNetworkingClient::onUpdate()
 			inputPacketData.verticalAxis = Input.verticalAxis;
 			inputPacketData.buttonBits = packInputControllerButtons(Input);
 
+			// CLIENT PREDICTION: Locally processed inputs (until server replication to resynch)
 			if (clientPrediction)
 			{
 				GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
