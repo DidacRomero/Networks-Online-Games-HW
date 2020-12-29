@@ -135,6 +135,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 			GameObject *explosion = NetworkInstantiate();
 			explosion->position = position;
 			explosion->size = vec2{ size, size };
+			explosion->customSize = (int)size;
 			explosion->angle = 365.0f * Random.next();
 
 			explosion->sprite = App->modRender->addSprite(explosion);

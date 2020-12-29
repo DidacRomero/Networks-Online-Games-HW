@@ -89,6 +89,11 @@ void ReplicationManagerServer::writeSprite(OutputMemoryStream& packet, GameObjec
 	std::string str = go->sprite->texture->filename;
 	packet << str;
 	packet << go->sprite->order;
+
+	if (strcmp(go->sprite->texture->filename, App->modResources->explosion1->filename) == 0)
+	{
+		packet << go->customSize;
+	}
 }
 
 void ReplicationManagerServer::writeAnimation(OutputMemoryStream& packet, GameObject* go)

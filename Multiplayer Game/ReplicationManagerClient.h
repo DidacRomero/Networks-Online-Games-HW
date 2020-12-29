@@ -9,6 +9,6 @@ class ReplicationManagerClient
 public: //METHODS
 
 	void read(const InputMemoryStream &packet);
-	void readSprite(const std::string&  filename, GameObject* go);
+	void readSprite(const std::string&  filename, GameObject* go, const InputMemoryStream& packet, uint16& packet_bytes);
 	void createBehaviour(BehaviourType behaviour, GameObject* go);
 };

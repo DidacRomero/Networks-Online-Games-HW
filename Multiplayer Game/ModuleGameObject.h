@@ -22,6 +22,9 @@ struct GameObject
 	// Tag for custom usage
 	uint32 tag = 0;
 
+	//Custom size to avoid problems with vec2
+	int customSize = 0;
+
 	// Network identity component
 	uint32 networkId = 0;                    // NOTE(jesus): Only for network game objects
 	bool networkInterpolationEnabled = true; // NOTE(jesus): Only for network game objects

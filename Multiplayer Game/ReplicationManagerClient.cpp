@@ -54,8 +54,8 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				//Receive sprite data
 				std::string sprite_filename;
 				packet >> sprite_filename;
-				readSprite(sprite_filename,go);
-				if(go->sprite !=nullptr)
+				readSprite(sprite_filename,go, packet, packet_bytes);
+				if(go->sprite !=nullptr && go->sprite->order == 0)
 				packet >> go->sprite->order;	//We need to assign the sprite order after creating the sprite
 
 				packet_bytes += sizeof(sprite_filename);
@@ -111,7 +111,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 	}
 }
 
-void ReplicationManagerClient::readSprite(const std::string& filename, GameObject* go)
+void ReplicationManagerClient::readSprite(const std::string& filename, GameObject* go, const InputMemoryStream& packet, uint16 &packet_bytes)
 {
 	// Create sprite
 	go->sprite = App->modRender->addSprite(go);
@@ -139,6 +139,11 @@ void ReplicationManagerClient::readSprite(const std::string& filename, GameObjec
 		}
 		go->animation->clip = App->modResources->explosionClip;
 		App->modSound->playAudioClip(App->modResources->audioClipExplosion);	//Play the audio clip
+		packet >> go->sprite->order;
+		packet_bytes += sizeof(go->sprite->order);
+		packet >> go->customSize;
+		packet_bytes += sizeof(go->customSize);
+		go->size = { (float)go->customSize, (float)go->customSize };
 	}
 }
 
