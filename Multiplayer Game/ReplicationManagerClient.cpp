@@ -99,7 +99,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			else if (action == ReplicateAction::DESTROY)
 			{
 				//If destroy, get go from linking context, unregister & destroy
-				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
+				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId,false);
 				if (go != nullptr)
 				{
 					DLOG(" Destroyed a GameObject from client");
@@ -138,6 +138,7 @@ void ReplicationManagerClient::readSprite(const std::string& filename, GameObjec
 			go->animation = App->modRender->addAnimation(go);
 		}
 		go->animation->clip = App->modResources->explosionClip;
+		App->modSound->playAudioClip(App->modResources->audioClipExplosion);	//Play the audio clip
 	}
 }
 
