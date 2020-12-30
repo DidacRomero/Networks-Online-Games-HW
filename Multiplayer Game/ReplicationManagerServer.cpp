@@ -90,10 +90,8 @@ void ReplicationManagerServer::writeSprite(OutputMemoryStream& packet, GameObjec
 	packet << str;
 	packet << go->sprite->order;
 
-	if (strcmp(go->sprite->texture->filename, App->modResources->explosion1->filename) == 0)
-	{
-		packet << go->customSize;
-	}
+	packet << go->size.x;
+	packet << go->size.y;
 }
 
 void ReplicationManagerServer::writeAnimation(OutputMemoryStream& packet, GameObject* go)
