@@ -269,12 +269,12 @@ void ModuleNetworkingServer::onUpdate()
 					replicationPacket << ServerMessage::Replication;
 
 					Delivery* delivery = clientProxy.delivery_manager_server.writeSequenceNumber(replicationPacket);
-					//DeliveryDelegate* replicationManagerMsgData = new DeliveryDelegate(&clientProxy.replication_manager_server);	//TODO: Carles
+					ServerReplicationDelegate* serverReplicationDelegate = new ServerReplicationDelegate(&clientProxy.replication_manager_server);
 					replicationPacket << clientProxy.nextExpectedInputSequenceNumber;
 
-					clientProxy.replication_manager_server.write(replicationPacket);
+					clientProxy.replication_manager_server.write(replicationPacket, serverReplicationDelegate);
 
-					//delivery->deliveryDelegate = replicationManagerMsgData;	//TODO: Carles
+					delivery->deliveryDelegate = serverReplicationDelegate;
 
 					sendPacket(replicationPacket, clientProxy.address);
 

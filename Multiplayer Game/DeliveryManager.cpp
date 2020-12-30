@@ -72,7 +72,7 @@ void DeliveryManager::writeSequenceNumbersPendingAck(OutputMemoryStream& packet)
 	}
 }
 
-void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet)	//TODO: Carles, implement delivery success/failure procedures
+void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet)
 {
 	std::size_t ackSize;
 	packet >> ackSize;
@@ -83,14 +83,14 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 		packet >> firstAckNum;
 
 		uint32 nextAckNum = firstAckNum;
-		uint32 onePastLast = nextAckNum + (uint32)ackSize;	// WARNING: Carles, check if the cast works correctly
+		uint32 onePastLast = nextAckNum + (uint32)ackSize;
 
 		while (nextAckNum < onePastLast && !pendingDeliveries.empty())
 		{
 			Delivery* delivery = pendingDeliveries.front();
 			if (delivery->sequenceNumber == nextAckNum)
 			{
-				//delivery->deliveryDelegate->onDeliverySuccess(this);
+				delivery->deliveryDelegate->onDeliverySuccess(this);
 
 				RELEASE(delivery);
 				pendingDeliveries.pop();
@@ -99,7 +99,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 			}
 			else if (delivery->sequenceNumber < nextAckNum)
 			{
-				//delivery->deliveryDelegate->onDeliveryFailure(this);	// WARNING: If something breaks it might be because of this
+				delivery->deliveryDelegate->onDeliveryFailure(this);	// WARNING: If something breaks it might be because of this
 
 				RELEASE(delivery);
 				pendingDeliveries.pop();
@@ -117,7 +117,7 @@ void DeliveryManager::processTimedOutPackets()
 		Delivery* delivery = pendingDeliveries.front();
 		if (Time.time - delivery->dispatchTime >= ACK_INTERVAL_SECONDS)
 		{
-			//delivery->deliveryDelegate->onDeliveryFailure(this);
+			delivery->deliveryDelegate->onDeliveryFailure(this);
 
 			RELEASE(delivery);
 			pendingDeliveries.pop();

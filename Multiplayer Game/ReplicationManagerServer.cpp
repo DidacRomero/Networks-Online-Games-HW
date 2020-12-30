@@ -25,7 +25,7 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 	umap.emplace(networkId, comm);
 }
 
-void ReplicationManagerServer::write(OutputMemoryStream& packet)
+void ReplicationManagerServer::write(OutputMemoryStream& packet, ServerReplicationDelegate* deliveryDelegate)
 {
 	//Iterate the map to create a packet with all the changes
 	for (std::unordered_map<uint32, ReplicationCommand>::iterator it = umap.begin(); it != umap.end(); ++it)
@@ -78,7 +78,12 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			//If action Destroy (we don't really do anything here, but the else if is here for possible scalibilty in the future, 
 			//in case we have other replication actions)
 		}
+
+		// ACKNOWLEDGEMENT
+		deliveryDelegate->addCommand((*it).second);
+		(*it).second.action = ReplicateAction::NONE;	//WARNING: This could be a cause of problems
 	}
+
 	//Clear remove the application command
 	umap.clear();
 }
@@ -97,4 +102,58 @@ void ReplicationManagerServer::writeSprite(OutputMemoryStream& packet, GameObjec
 void ReplicationManagerServer::writeAnimation(OutputMemoryStream& packet, GameObject* go)
 {
 	//packet << go->animation->clip
+}
+
+// SERVER REPLICATION DELEGATE
+ServerReplicationDelegate::ServerReplicationDelegate(ReplicationManagerServer* replicationManager) : replicationManager(replicationManager)
+{
+}
+
+ServerReplicationDelegate::~ServerReplicationDelegate()
+{
+}
+
+void ServerReplicationDelegate::onDeliverySuccess(DeliveryManager* deliveryManager)
+{
+	for (const ReplicationCommand& replicationCommand : replicationCommands)
+	{
+		if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
+		{
+			switch (replicationCommand.action)
+			{
+			case ReplicateAction::DESTROY:
+				replicationManager->destroy(replicationCommand.networkId);
+				break;
+			}
+		}
+	}
+}
+
+void ServerReplicationDelegate::onDeliveryFailure(DeliveryManager* deliveryManager)
+{
+	for (const ReplicationCommand& replicationCommand : replicationCommands)
+	{
+		if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
+		{
+			switch (replicationCommand.action)
+			{
+			case ReplicateAction::CREATE:
+				replicationManager->create(replicationCommand.networkId);
+				break;
+
+			case ReplicateAction::UPDATE:
+				replicationManager->update(replicationCommand.networkId);
+				break;
+
+			case ReplicateAction::DESTROY:
+				replicationManager->destroy(replicationCommand.networkId);
+				break;
+			}
+		}
+	}
+}
+
+void ServerReplicationDelegate::addCommand(const ReplicationCommand& replicationCommand)
+{
+	replicationCommands.push_back(replicationCommand);
 }
