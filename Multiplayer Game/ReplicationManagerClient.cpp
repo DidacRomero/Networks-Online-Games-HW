@@ -96,14 +96,14 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 					}
 
 					// Interpolation
-					if (App->modNetClient->isInterpolationEnabled() && go->networkInterpolationEnabled)
+					/*if (App->modNetClient->isInterpolationEnabled() && go->networkInterpolationEnabled)
 					{
 						go->interpolation.lerpMaxTime = App->modNetClient->calcAvgReplicationTime();
 						go->interpolation.secondsElapsed = 0.0f;
 						go->interpolation.initialPosition = go->interpolation.prevPosition;
 						go->interpolation.finalPosition = go->position;
 						go->position = go->interpolation.initialPosition;
-					}
+					}*/
 				}
 
 				packet_bytes += sizeof(go->position.x);
