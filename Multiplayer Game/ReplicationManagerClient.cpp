@@ -54,8 +54,6 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				std::string sprite_filename;
 				packet >> sprite_filename;
 				readSprite(sprite_filename,go, packet, packet_bytes);
-				//if(go->sprite !=nullptr && go->sprite->order == 0)
-				//packet >> go->sprite->order;	//We need to assign the sprite order after creating the sprite
 
 				packet_bytes += sizeof(sprite_filename);
 				packet_bytes += sizeof(go->sprite->order);
@@ -171,17 +169,13 @@ void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObje
 		go->behaviour = (Spaceship*)b;
 		go->behaviour->isServer = false;
 		go->behaviour->isLocalPlayer = false;
-		go->size = { 100,100 };
 		go->collider = App->modCollision->addCollider(ColliderType::Player, go);
-		//go->collider->isTrigger = false;
 	}
 	else if (behaviour == BehaviourType::Laser)
 	{
 		go->behaviour = (Laser*)b;
 		go->behaviour->isServer = false;
-		go->size = { 20,60 };
 		go->collider = App->modCollision->addCollider(ColliderType::Laser, go);
-		//go->collider->isTrigger = true;
 	}
 }
 
