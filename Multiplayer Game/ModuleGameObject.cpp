@@ -44,6 +44,11 @@ bool ModuleGameObject::update()
 		}
 	}
 
+	if (App->modNetClient->isEnabled() && App->modNetClient->isInterpolationEnabled())
+		for (GameObject& gameObject : gameObjects)
+			if (gameObject.state == GameObject::UPDATING && gameObject.networkInterpolationEnabled && gameObject.behaviour != nullptr)
+				gameObject.behaviour->interpolate();
+
 	return true;
 }
 

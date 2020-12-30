@@ -75,9 +75,6 @@ void ModuleBehaviour::handleBehaviourLifeCycle(Behaviour *behaviour)
 			behaviour->start();
 			break;
 		case GameObject::UPDATING:
-			if (App->modNetClient->isInterpolationEnabled() && gameObject->networkInterpolationEnabled && gameObject->interpolation.lerpMaxTime != 0.0f)
-				behaviour->interpolate();
-
 			behaviour->update();
 			break;
 		case GameObject::DESTROYING:

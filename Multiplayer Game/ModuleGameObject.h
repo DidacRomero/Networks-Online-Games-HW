@@ -13,6 +13,8 @@ struct GameObject
 	struct Interpolation
 	{
 		vec2 prevPosition = vec2{ 0.0f, 0.0f };
+		float prevAngle = 0.0f;
+
 		vec2 initialPosition = vec2{ 0.0f, 0.0f };
 		float initialAngle = 0.0f;
 

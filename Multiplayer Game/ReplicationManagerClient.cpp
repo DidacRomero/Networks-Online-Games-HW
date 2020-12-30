@@ -95,14 +95,21 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 					}
 
 					// Interpolation
-					/*if (App->modNetClient->isInterpolationEnabled() && go->networkInterpolationEnabled)
+					if (App->modNetClient->isInterpolationEnabled() && go->networkInterpolationEnabled)
 					{
 						go->interpolation.lerpMaxTime = App->modNetClient->calcAvgReplicationTime();
 						go->interpolation.secondsElapsed = 0.0f;
+
+						go->interpolation.prevPosition = go->position;
 						go->interpolation.initialPosition = go->interpolation.prevPosition;
 						go->interpolation.finalPosition = go->position;
 						go->position = go->interpolation.initialPosition;
-					}*/
+
+						go->interpolation.prevAngle = go->angle;
+						go->interpolation.initialAngle = go->interpolation.prevAngle;
+						go->interpolation.finalAngle = go->angle;
+						go->angle = go->interpolation.initialAngle;
+					}
 				}
 
 				packet_bytes += sizeof(go->position.x);

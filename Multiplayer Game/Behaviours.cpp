@@ -3,9 +3,12 @@
 
 void Behaviour::interpolate()
 {
-	float lerpTime = gameObject->interpolation.secondsElapsed / gameObject->interpolation.lerpMaxTime;
-	gameObject->position = lerp(gameObject->interpolation.initialPosition, gameObject->interpolation.finalPosition, max(1.0f, lerpTime));
-	gameObject->interpolation.secondsElapsed += Time.deltaTime;
+	if (gameObject->interpolation.lerpMaxTime != 0.0f) {
+		float lerpTime = gameObject->interpolation.secondsElapsed / gameObject->interpolation.lerpMaxTime;
+		gameObject->position = lerp(gameObject->interpolation.initialPosition, gameObject->interpolation.finalPosition, max(1.0f, lerpTime));
+		gameObject->angle = lerp(gameObject->interpolation.initialAngle, gameObject->interpolation.finalAngle, max(1.0f, lerpTime));
+		gameObject->interpolation.secondsElapsed += Time.deltaTime;
+	}
 }
 
 void Laser::start()
