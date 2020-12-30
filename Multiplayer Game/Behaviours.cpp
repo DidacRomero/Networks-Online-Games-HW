@@ -4,9 +4,10 @@
 void Behaviour::interpolate()
 {
 	if (gameObject->interpolation.lerpMaxTime != 0.0f) {
-		float lerpTime = gameObject->interpolation.secondsElapsed / gameObject->interpolation.lerpMaxTime;
-		gameObject->position = lerp(gameObject->interpolation.initialPosition, gameObject->interpolation.finalPosition, max(1.0f, lerpTime));
-		gameObject->angle = lerp(gameObject->interpolation.initialAngle, gameObject->interpolation.finalAngle, max(1.0f, lerpTime));
+		float lerpTime = min(1.0f, gameObject->interpolation.secondsElapsed / gameObject->interpolation.lerpMaxTime);
+
+		gameObject->position = lerp(gameObject->interpolation.initialPosition, gameObject->interpolation.finalPosition, lerpTime);
+		gameObject->angle = lerp(gameObject->interpolation.initialAngle, gameObject->interpolation.finalAngle, lerpTime);
 		gameObject->interpolation.secondsElapsed += Time.deltaTime;
 	}
 }

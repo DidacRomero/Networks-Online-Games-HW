@@ -79,6 +79,9 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				//If Update, get object from linking, deserialize
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 
+				go->interpolation.prevPosition = go->position;
+				go->interpolation.prevAngle = go->angle;
+
 				//Check for Nulls & possibility of receiving an Update before a Create!!!!!!!
 				if (go != nullptr)
 				{
@@ -100,12 +103,10 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 						go->interpolation.lerpMaxTime = App->modNetClient->calcAvgReplicationTime();
 						go->interpolation.secondsElapsed = 0.0f;
 
-						go->interpolation.prevPosition = go->position;
 						go->interpolation.initialPosition = go->interpolation.prevPosition;
 						go->interpolation.finalPosition = go->position;
 						go->position = go->interpolation.initialPosition;
 
-						go->interpolation.prevAngle = go->angle;
 						go->interpolation.initialAngle = go->interpolation.prevAngle;
 						go->interpolation.finalAngle = go->angle;
 						go->angle = go->interpolation.initialAngle;
