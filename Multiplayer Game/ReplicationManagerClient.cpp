@@ -54,8 +54,8 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				std::string sprite_filename;
 				packet >> sprite_filename;
 				readSprite(sprite_filename,go, packet, packet_bytes);
-				if(go->sprite !=nullptr && go->sprite->order == 0)
-				packet >> go->sprite->order;	//We need to assign the sprite order after creating the sprite
+				//if(go->sprite !=nullptr && go->sprite->order == 0)
+				//packet >> go->sprite->order;	//We need to assign the sprite order after creating the sprite
 
 				packet_bytes += sizeof(sprite_filename);
 				packet_bytes += sizeof(go->sprite->order);
@@ -89,7 +89,6 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 					//If it's a spaceship update
 					if (go->behaviour != nullptr && go->behaviour->type() == BehaviourType::Spaceship)
 					{
-						//ALERT!!!! HARD TEST THIS we might need to pass the type of behaviour in order to add the packet bytes of such an update, in case the spaceship would be nullptr
 						Spaceship* ship = (Spaceship*)go->behaviour;
 						packet >> ship->hitPoints;
 						packet_bytes += sizeof(ship->hitPoints);
@@ -127,8 +126,16 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 
 void ReplicationManagerClient::readSprite(const std::string& filename, GameObject* go, const InputMemoryStream& packet, uint16 &packet_bytes)
 {
-	// Create sprite
+	// Create sprite, give sprite ORDER & SIZE
 	go->sprite = App->modRender->addSprite(go);
+	packet >> go->sprite->order;
+	packet_bytes += sizeof(go->sprite->order);
+
+	float x, y;
+	packet >> x;
+	packet >> y;
+	go->size = { x, y };
+
 	//determine the texture
 	if (strcmp(filename.c_str(), App->modResources->asteroid1->filename) == 0)	//ASTEROID 1
 		go->sprite->texture = App->modResources->asteroid1;
@@ -142,22 +149,16 @@ void ReplicationManagerClient::readSprite(const std::string& filename, GameObjec
 		go->sprite->texture = App->modResources->spacecraft3;
 	else if (strcmp(filename.c_str(), App->modResources->laser->filename) == 0) //LASER
 		go->sprite->texture = App->modResources->laser;
-	else if (strcmp(filename.c_str(), App->modResources->explosion1->filename) == 0) //EXPLOSION 1
+	else if (strcmp(filename.c_str(), App->modResources->explosion1->filename) == 0) //EXPLOSION 1		(IT'S a SPECIAL CASE)
 	{
-		//Give sprite and animation clip
+		//Give sprite AND animation clip
 		go->sprite->texture = App->modResources->explosion1;
 
 		if (go->animation == nullptr)
-		{
 			go->animation = App->modRender->addAnimation(go);
-		}
+
 		go->animation->clip = App->modResources->explosionClip;
-		App->modSound->playAudioClip(App->modResources->audioClipExplosion);	//Play the audio clip
-		packet >> go->sprite->order;
-		packet_bytes += sizeof(go->sprite->order);
-		packet >> go->customSize;
-		packet_bytes += sizeof(go->customSize);
-		go->size = { (float)go->customSize, (float)go->customSize };
+		App->modSound->playAudioClip(App->modResources->audioClipExplosion);	//Play the explosion audio clip
 	}
 }
 
@@ -182,8 +183,6 @@ void ReplicationManagerClient::createBehaviour(BehaviourType behaviour, GameObje
 		go->collider = App->modCollision->addCollider(ColliderType::Laser, go);
 		//go->collider->isTrigger = true;
 	}
-
-
 }
 
 
