@@ -14,7 +14,11 @@ public:
 
 	void setPlayerInfo(const char *playerName, uint8 spaceshipType);
 
+	float calcAvgReplicationTime() const;
 
+	uint32 getNetworkId() const { return networkId; }
+
+	bool isInterpolationEnabled() const { return entityInterpolation; }
 
 private:
 
@@ -110,5 +114,11 @@ private:
 
 	// TODO(you): Latency management lab session
 	bool clientPrediction = true;
+
+	bool entityInterpolation = true;
+	bool mustEnableInterpolation = true;	// Entity Interpolation "Turn On" Flag, so that the other flag is only switched on a specific, controled moment in the App loop
+
+	float replicationTimeBuffer[sizeof(float) * REPLICATION_TIME_BUFFER_SIZE] = { 0 };	// WARNING: Could need adjustments	//@ch0m5: This and lerpMaxTime need fixing
+	uint32 replicationTimeIterator = 0;
 };
 

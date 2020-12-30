@@ -41,7 +41,6 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 					//Register the new gameObject
 					App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkId);
 				}
-					
 
 				//Now we need to fill ALL the data of the gameObject, position, behaviour, sprite etc.
 				packet >> go->position.x;
@@ -69,6 +68,11 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				packet >> go->tag;
 				packet_bytes += sizeof(go->tag);
 
+				// Interpolation
+				if (go->networkId == App->modNetClient->getNetworkId())	// If object created is from this client, don't apply interpolation	// WARNING: This could not be working as intended
+					go->networkInterpolationEnabled = false;
+				else
+					go->interpolation.prevPosition = go->position;
 			}
 			else if (action == ReplicateAction::UPDATE)
 			{
@@ -90,6 +94,16 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 						packet >> ship->hitPoints;
 						packet_bytes += sizeof(ship->hitPoints);
 					}
+
+					// Interpolation
+					/*if (App->modNetClient->isInterpolationEnabled() && go->networkInterpolationEnabled)
+					{
+						go->interpolation.lerpMaxTime = App->modNetClient->calcAvgReplicationTime();
+						go->interpolation.secondsElapsed = 0.0f;
+						go->interpolation.initialPosition = go->interpolation.prevPosition;
+						go->interpolation.finalPosition = go->position;
+						go->position = go->interpolation.initialPosition;
+					}*/
 				}
 
 				packet_bytes += sizeof(go->position.x);
