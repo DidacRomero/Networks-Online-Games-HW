@@ -17,12 +17,7 @@ struct Behaviour
 
 	virtual void update() { }
 
-	void interpolate()
-	{
-		float lerpTime = gameObject->interpolation.secondsElapsed / gameObject->interpolation.lerpMaxTime;
-		gameObject->position = lerp(gameObject->interpolation.initialPosition, gameObject->interpolation.finalPosition, max(1.0f, lerpTime));
-		gameObject->interpolation.secondsElapsed += Time.deltaTime;
-	}
+	void interpolate();
 
 	virtual void destroy() { }
 
