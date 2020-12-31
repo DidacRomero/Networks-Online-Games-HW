@@ -99,7 +99,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 			}
 			else if (delivery->sequenceNumber < nextAckNum)
 			{
-				delivery->deliveryDelegate->onDeliveryFailure(this);	// WARNING: If something breaks it might be because of this
+				delivery->deliveryDelegate->onDeliveryFailure(this);
 
 				RELEASE(delivery);
 				pendingDeliveries.pop();
