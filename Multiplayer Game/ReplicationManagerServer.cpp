@@ -115,16 +115,13 @@ ServerReplicationDelegate::~ServerReplicationDelegate()
 
 void ServerReplicationDelegate::onDeliverySuccess(DeliveryManager* deliveryManager)
 {
+	return;	// Commend if we ever need to do something here, follow loop below
+
 	for (const ReplicationCommand& replicationCommand : replicationCommands)
 	{
 		if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
 		{
-			switch (replicationCommand.action)
-			{
-			case ReplicateAction::DESTROY:
-				replicationManager->destroy(replicationCommand.networkId);
-				break;
-			}
+			// In case we wanted to do something, do it here
 		}
 	}
 }
