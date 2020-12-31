@@ -35,7 +35,7 @@ order to keep track of what packet is sent and expected to receive in each side,
 until confirmation of succesful delivery is recieved. When packets are not Acknowledged by the client, either by
 an error or by too much time passing since it was sent, the server resends the packet until it is.
 
-Improving Latency Handling: Carles	(Completely Achieved, but no lag compensation)
+Improving Latency Handling: Carles	(Achieved, but without lag compensation)
 
 Both the Client Prediction and the Interpolation of other Client GameObjects works as expected and no bugs
 have been located. Client Prediction locally processes inputs until the client resyncs with the server on
