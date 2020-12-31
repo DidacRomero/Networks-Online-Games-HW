@@ -28,7 +28,7 @@ so you might see that there are additional gameobjects in the network even if yo
 there will only be 1 laser at max per client that takes longer to be destroyed (as described previously).
 
 
-Reliability on top of UDP: Carles	(Achieved, altough not super confident it works flawlessly)
+Reliability on top of UDP: Carles	(Achieved, altough it might have some undetected issues)
 
 Redundancy and Acknowledgement work correctly: both client and server send packets with sequence ids in
 order to keep track of what packet is sent and expected to receive in each side, re-sending packets if necessary
