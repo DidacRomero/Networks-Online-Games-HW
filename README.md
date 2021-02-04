@@ -1,6 +1,8 @@
 # Dídac Romero & Carles Homs
 
 ## Multiplayer Game
+Multiplayer 2D spaceships game prepared for online play, with all networking features programmed with C++ libraries using client-server communication through sockets and packets.
+
 The game is the same as presented in the practice, with the same spaceships and mechanics.
 
 ## Instructions
