@@ -15,7 +15,7 @@ Same as the default ones for the practice.
 - Shoot Laser: LEFT Arrow Key
 
 ## Implemented Features
-### World State Replication by Dídac Romero	(Achieved with 2 known bugs)**
+### World State Replication by Dídac Romero	(Achieved with 2 known bugs)
 
 #### BUG 1
 There's a known bug where whenever you shoot at a laser and it hits the player, the laser is not destroyed. 
