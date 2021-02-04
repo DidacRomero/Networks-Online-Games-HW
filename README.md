@@ -8,9 +8,9 @@ The game is the same as presented in the practice, with the same spaceships and 
 Same as the default ones for the practice.
 
 ### KEYBOARD
-A,D ---------> to steer a spaceship
-Arrow Key: DOWN -----------> to go forward
-Arrow Key: LEFT -----------> to shoot a laser
+- Steer Spaceshio: A/D Keys
+- Move Forward: DOWN Arrow Key
+- Shoot Laser: LEFT Arrow Key
 
 ## Implemented Features
 ### World State Replication by Dídac Romero	(Achieved with 2 known bugs)**
