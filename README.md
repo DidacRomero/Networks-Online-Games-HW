@@ -10,7 +10,7 @@ The game is the same as presented in the practice, with the same spaceships and 
 Same as the default ones for the practice.
 
 ### KEYBOARD
-- Steer Spaceshio: A/D Keys
+- Steer Spaceship: A/D Keys
 - Move Forward: DOWN Arrow Key
 - Shoot Laser: LEFT Arrow Key
 
